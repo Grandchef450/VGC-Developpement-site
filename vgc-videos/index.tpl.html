@@ -1,0 +1,1329 @@
+<title>VGC Développement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --rosso:#da291c;--rosso-scuro:#9d2211;--bianco:#ffffff;--nero:#000000;--notte:#0d0d0d;--notte-2:#181818;
+  --grafite:#303030;--fumo:#8f8f8f;--piombo:#666666;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --t-micro:9px;--t-caption:11px;--t-sm:12px;--t-body:13px;
+  --track-wide:.091em;--track-mid:.083em;
+  --gutter:clamp(20px,5vw,60px);--sec:clamp(72px,11vw,140px);
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;color-scheme:dark}
+body{margin:0;background:var(--nero);color:var(--bianco);font-family:var(--f-display);font-size:var(--t-body);line-height:1.78;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img,svg{max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:1px solid var(--rosso);outline-offset:3px}
+h1,h2,h3,h4,p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+code{font-family:var(--f-mono);font-size:.92em;color:var(--bianco)}
+.wrap{padding-inline:var(--gutter)}
+.rule{height:1px;background:var(--grafite);border:0;margin:0}
+
+/* lettering */
+.eyebrow{font-size:var(--t-caption);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo);font-weight:500;display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--rosso);transform-origin:left;transition:transform .8s var(--ease) .15s}
+.has-js .eyebrow.rv::before{transform:scaleX(0)}
+.has-js .eyebrow.rv.in::before{transform:scaleX(1)}
+.display{font-weight:600;text-transform:uppercase;line-height:.94;letter-spacing:-.012em;text-wrap:balance}
+.d-xl{font-size:clamp(34px,7.4vw,104px)}
+.d-lg{font-size:clamp(30px,5.2vw,66px)}
+.label{font-family:var(--f-mono);font-size:var(--t-caption);letter-spacing:var(--track-mid);text-transform:uppercase;color:var(--fumo)}
+.lede{font-size:clamp(13px,1.35vw,16px);line-height:1.72;color:var(--fumo);max-width:62ch}
+.lede strong{color:var(--bianco);font-weight:500}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* progress + cursor */
+#prog{position:fixed;top:0;left:0;height:2px;width:0;background:var(--rosso);z-index:90;transition:width .1s linear}
+#cursor{position:fixed;top:0;left:0;width:26px;height:26px;margin:-13px 0 0 -13px;border:1px solid var(--rosso);border-radius:9999px;pointer-events:none;z-index:95;opacity:0;transition:opacity .3s,transform .18s var(--ease),background-color .25s}
+#cursor.on{opacity:1}
+#cursor.hot{transform:scale(1.9);background:rgba(218,41,28,.16)}
+@media (hover:none),(pointer:coarse){#cursor{display:none}}
+
+/* nav */
+.nav{position:fixed;inset:0 0 auto 0;z-index:80;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px var(--gutter);padding-top:calc(14px + env(safe-area-inset-top,0px));background:transparent;border-bottom:1px solid transparent;transition:background .5s var(--ease),border-color .5s var(--ease),padding .5s var(--ease)}
+.nav.stuck{background:rgba(0,0,0,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom-color:var(--grafite);padding-block:8px;padding-top:calc(8px + env(safe-area-inset-top,0px))}
+.brand{display:flex;align-items:center;gap:12px;position:relative;z-index:2;padding:4px 10px;margin-left:-10px}
+.brand img{width:40px;height:40px;object-fit:contain;display:block;filter:drop-shadow(0 0 10px rgba(218,41,28,.35));transition:transform .6s var(--ease)}
+.brand:hover img{transform:rotate(-12deg) scale(1.08)}
+.brand-txt{font-size:var(--t-sm);font-weight:600;text-transform:uppercase;letter-spacing:var(--track-mid);white-space:nowrap;line-height:1.2}
+.brand-txt small{display:block;font-family:var(--f-mono);font-size:var(--t-micro);color:var(--fumo);font-weight:400;letter-spacing:var(--track-wide)}
+.nav-links{display:flex;gap:clamp(2px,.8vw,10px)}
+.nlink{position:relative;z-index:1;display:inline-block;padding:6px 10px;font-size:var(--t-sm);text-transform:uppercase;letter-spacing:var(--track-mid);color:var(--bianco);transition:color .35s var(--ease)}
+.nlink:hover{color:var(--bianco)}
+.nav-dot{position:absolute;left:0;top:0;width:0;height:0;background:var(--rosso);opacity:0;transform:translate(-40px,0);transition:transform .55s var(--ease),width .45s var(--ease),height .45s var(--ease),opacity .4s;pointer-events:none;will-change:transform,width,height;z-index:0}
+.nav-dot.on{opacity:1}
+body.cat-mode .nav-dot,body.menu-open .nav-dot{opacity:0}
+.nav-ctas{display:flex;gap:8px;flex:none}
+@media(max-width:960px){.nav-dot{display:none}.nav-ctas{display:none}}
+.burger{display:none;width:26px;height:14px;position:relative;z-index:2}
+.burger span{position:absolute;left:0;right:0;height:1px;background:var(--bianco);transition:transform .4s var(--ease),opacity .3s}
+.burger span:nth-child(1){top:0}.burger span:nth-child(2){top:50%}.burger span:nth-child(3){bottom:0}
+body.menu-open .burger span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+body.menu-open .burger span:nth-child(2){opacity:0}
+body.menu-open .burger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media(max-width:960px){.nav-links{display:none}.burger{display:block}}
+.sheet{position:fixed;inset:0;z-index:79;background:var(--nero);display:flex;flex-direction:column;justify-content:center;gap:6px;padding:0 var(--gutter);clip-path:inset(0 0 100% 0);visibility:hidden;transition:clip-path .7s var(--ease),visibility 0s .7s}
+body.menu-open .sheet{clip-path:inset(0 0 0 0);visibility:visible;transition:clip-path .7s var(--ease),visibility 0s}
+.sheet a{font-size:clamp(26px,8vw,50px);font-weight:600;text-transform:uppercase;line-height:1.1;letter-spacing:-.01em;opacity:0;transform:translateY(20px);transition:opacity .5s var(--ease),transform .5s var(--ease),color .3s}
+body.menu-open .sheet a{opacity:1;transform:none}
+body.menu-open .sheet a:nth-child(2){transition-delay:.05s}body.menu-open .sheet a:nth-child(3){transition-delay:.1s}body.menu-open .sheet a:nth-child(4){transition-delay:.15s}body.menu-open .sheet a:nth-child(5){transition-delay:.2s}body.menu-open .sheet a:nth-child(6){transition-delay:.25s}body.menu-open .sheet a:nth-child(7){transition-delay:.3s}body.menu-open .sheet a:nth-child(8){transition-delay:.35s}body.menu-open .sheet a:nth-child(9){transition-delay:.4s}
+.sheet a{font-size:clamp(22px,6.5vw,44px)}
+
+/* pricing */
+.price{background:var(--notte)}
+.price-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(30px,5vw,90px);margin-top:clamp(40px,6vw,72px);align-items:start}
+.plist{border-top:1px solid var(--grafite)}
+.plist li{display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--grafite);position:relative;transition:padding-left .45s var(--ease)}
+.plist li:hover{padding-left:12px}
+.plist li::before{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:100%;background:var(--rosso);transform:scaleX(0);transform-origin:left;transition:transform .6s var(--ease)}
+.plist li:hover::before{transform:scaleX(1)}
+.plist h3{font-size:15px;font-weight:500;text-transform:uppercase;letter-spacing:.005em;line-height:1.3}
+.plist p{font-size:var(--t-sm);color:var(--fumo);line-height:1.6;max-width:52ch}
+.plist .pv{font-family:var(--f-mono);font-size:clamp(18px,2vw,26px);font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap;color:var(--bianco)}
+.plist .pv small{font-size:.5em;color:var(--fumo);margin-left:4px;letter-spacing:.04em}
+.plist .pv.new{color:var(--rosso)}
+.plist .tag{display:inline-block;font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--rosso);border:1px solid rgba(218,41,28,.5);border-radius:9999px;padding:2px 9px;margin-left:10px;vertical-align:middle}
+.price-side{display:flex;flex-direction:column;gap:22px;position:sticky;top:110px}
+.price-side .lede{max-width:44ch}
+.contact{border:1px solid var(--grafite);padding:22px 24px;display:flex;flex-direction:column;gap:8px}
+.contact .label{color:var(--fumo)}
+.contact a{font-family:var(--f-mono);font-size:var(--t-body);color:var(--bianco);word-break:break-all;transition:color .3s}
+.contact a:hover{color:var(--rosso)}
+.plist li h3 .desc{display:block;font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:.08em;color:var(--fumo);text-transform:uppercase;margin-top:3px}
+.plist li.grp{grid-template-columns:1fr;padding:30px 0 10px;border-bottom:1px solid var(--grafite)}
+.plist li.grp:hover{padding-left:0}
+.plist li.grp::before{display:none}
+.plist li.grp .label{color:var(--rosso)}
+@media(max-width:900px){.price-grid{grid-template-columns:1fr}.price-side{position:static}}
+
+/* legal */
+.legal-wrap{display:grid;grid-template-columns:260px 1fr;gap:clamp(30px,5vw,80px);margin-top:clamp(40px,6vw,72px);align-items:start}
+.legal-toc{position:sticky;top:110px;display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--grafite)}
+.legal-toc a{font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo);padding:7px 0 7px 16px;position:relative;transition:color .3s,padding-left .3s}
+.legal-toc a::before{content:"";position:absolute;left:-1px;top:0;bottom:0;width:1px;background:var(--rosso);transform:scaleY(0);transition:transform .35s var(--ease)}
+.legal-toc a:hover{color:var(--bianco);padding-left:22px}
+.legal-toc a:hover::before{transform:scaleY(1)}
+.legal-key{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--grafite);border:1px solid var(--grafite);margin-bottom:clamp(30px,4vw,48px)}
+.legal-key div{background:var(--nero);padding:20px 18px;display:flex;flex-direction:column;gap:8px}
+.legal-key b{font-size:14px;font-weight:500;text-transform:uppercase;letter-spacing:.005em;line-height:1.25}
+.legal-key span{font-size:var(--t-sm);color:var(--fumo);line-height:1.55}
+.legal-key i{font-family:var(--f-mono);font-size:var(--t-micro);color:var(--rosso);letter-spacing:var(--track-wide);font-style:normal}
+.legal{display:flex;flex-direction:column;gap:6px;max-width:78ch}
+.legal .pre{font-size:var(--t-body);color:var(--fumo);line-height:1.8;border-left:1px solid var(--rosso);padding-left:18px;margin-bottom:18px}
+.legal .pre b{color:var(--bianco);font-weight:500}
+.legal article{padding:22px 0;border-top:1px solid var(--grafite);display:flex;flex-direction:column;gap:10px}
+.legal article h3{font-size:15px;font-weight:500;text-transform:uppercase;letter-spacing:.005em;display:flex;gap:14px;align-items:baseline}
+.legal article h3 i{font-family:var(--f-mono);font-size:var(--t-caption);color:var(--rosso);font-style:normal;letter-spacing:var(--track-mid);flex:none}
+.legal article p,.legal article li{font-size:var(--t-body);color:var(--fumo);line-height:1.8}
+.legal article p b,.legal article li b{color:var(--bianco);font-weight:500}
+.legal article ul{display:flex;flex-direction:column;gap:6px;padding-left:18px;list-style:square}
+.legal article li::marker{color:var(--rosso)}
+.legal .sig{margin-top:14px;padding-top:18px;border-top:1px solid var(--grafite);font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo);line-height:2}
+@media(max-width:1000px){.legal-key{grid-template-columns:1fr 1fr}}
+@media(max-width:820px){.legal-wrap{grid-template-columns:1fr}.legal-toc{position:static;flex-direction:row;flex-wrap:wrap;border-left:0;border-top:1px solid var(--grafite);gap:0 14px}.legal-toc a{padding:8px 0}.legal-toc a::before{display:none}}
+@media(max-width:520px){.legal-key{grid-template-columns:1fr}}
+.sheet a:hover{color:var(--rosso)}
+.sheet .label{margin-top:24px;opacity:0;transition:opacity .5s .35s}
+body.menu-open .sheet .label{opacity:1}
+
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;gap:14px;padding:14px 26px;border:1px solid var(--bianco);font-size:var(--t-sm);text-transform:uppercase;letter-spacing:var(--track-mid);color:var(--bianco);overflow:hidden;isolation:isolate;transition:color .4s var(--ease),border-color .4s var(--ease)}
+.btn::before{content:"";position:absolute;inset:0;background:var(--rosso);z-index:-1;transform:translateX(-101%);transition:transform .5s var(--ease)}
+.btn:hover{border-color:var(--rosso)}
+.btn:hover::before{transform:translateX(0)}
+.btn .arr{display:inline-block;transition:transform .45s var(--ease)}
+.btn:hover .arr{transform:translateX(6px)}
+.btn.ghost{border-color:var(--grafite);color:var(--fumo)}
+.btn.ghost:hover{color:var(--bianco)}
+.btn.big{padding:18px 34px;font-size:var(--t-body)}
+.cta-sm{font-size:var(--t-caption);text-transform:uppercase;letter-spacing:var(--track-wide);border:1px solid var(--grafite);padding:8px 14px;color:var(--bianco);transition:border-color .35s,color .35s;white-space:nowrap}
+.cta-sm:hover{border-color:var(--rosso);color:var(--rosso)}
+.link-arr{display:inline-flex;align-items:center;gap:10px;font-size:var(--t-sm);text-transform:uppercase;letter-spacing:var(--track-mid);color:var(--bianco);transition:color .35s var(--ease)}
+.link-arr span{display:inline-block;transition:transform .45s var(--ease)}
+.link-arr:hover{color:var(--rosso)}
+.link-arr:hover span{transform:translateX(8px)}
+.mag{will-change:transform;transition:transform .35s var(--ease)}
+
+/* hero */
+.hero{position:relative;min-height:min(92vh,900px);display:flex;flex-direction:column;justify-content:flex-end;padding-top:150px;padding-bottom:clamp(40px,6vw,70px);overflow:hidden;isolation:isolate}
+.hero-img{position:absolute;inset:0;z-index:-3;background:#000 url(img/hero.jpg) center 42%/cover no-repeat;transform:scale(1.12);animation:kenburns 9s var(--ease) forwards;will-change:transform}
+.hero-video{position:absolute;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.hero-video video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity 1.2s var(--ease)}
+.hero-video video.playing{opacity:1}
+.panel-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+@keyframes kenburns{to{transform:scale(1.0)}}
+.hero-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.05) 35%,rgba(0,0,0,.25) 60%,#000 100%),linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,0) 60%)}
+.hero-inner{position:relative;display:flex;flex-direction:column;gap:clamp(18px,3vw,34px)}
+.hero-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.hero-top{justify-content:flex-end}
+.hero h1 .ln{display:block;overflow:hidden;padding-bottom:.04em}
+.hero h1 .ln i{display:block;font-style:normal;transform:translateY(102%);animation:riseIn .95s var(--ease) forwards}
+.hero h1 .ln:nth-child(2) i{animation-delay:.1s}.hero h1 .ln:nth-child(3) i{animation-delay:.2s}
+@keyframes riseIn{to{transform:translateY(0)}}
+.hero h1 em{font-style:normal;color:var(--rosso)}
+.hero-meta{display:flex;flex-direction:column;gap:6px;text-align:right;opacity:0;animation:fadeUp .8s var(--ease) .5s forwards}
+.hero-meta .label{color:var(--bianco)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.hero-sub{display:flex;flex-wrap:wrap;gap:clamp(16px,3vw,44px);align-items:center;opacity:0;animation:fadeUp .8s var(--ease) .55s forwards}
+.hero-cta{display:flex;flex-wrap:wrap;gap:10px}
+.hero-logo{position:absolute;right:var(--gutter);top:calc(120px + env(safe-area-inset-top,0px));width:clamp(90px,12vw,170px);opacity:0;animation:fadeUp 1s var(--ease) .3s forwards;filter:drop-shadow(0 0 30px rgba(218,41,28,.45));pointer-events:none}
+@media(max-width:700px){.hero-meta{text-align:left}.hero-logo{width:80px;top:calc(90px + env(safe-area-inset-top,0px))}}
+.scroll-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--fumo);font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase}
+.scroll-hint::after{content:"";width:1px;height:34px;background:linear-gradient(var(--rosso),transparent);animation:drip 1.8s var(--ease) infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+@media(max-width:700px){.scroll-hint{display:none}}
+
+/* ticker */
+.ticker{border-block:1px solid var(--grafite);overflow:hidden;padding:14px 0;background:var(--nero)}
+.ticker-track{display:flex;width:max-content;animation:slide 60s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes slide{to{transform:translateX(-50%)}}
+.ticker-track span{font-family:var(--f-mono);font-size:var(--t-caption);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo);padding:0 26px;white-space:nowrap;display:inline-flex;align-items:center;gap:26px}
+.ticker-track span b{color:var(--bianco);font-weight:400}
+.ticker-track span::after{content:"";display:inline-block;width:4px;height:4px;background:var(--rosso)}
+
+/* reveal */
+.has-js .rv{opacity:0;transform:translateY(26px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.has-js .rv.in{opacity:1;transform:none}
+.has-js .rv[data-d="1"]{transition-delay:.08s}.has-js .rv[data-d="2"]{transition-delay:.16s}.has-js .rv[data-d="3"]{transition-delay:.24s}.has-js .rv[data-d="4"]{transition-delay:.32s}.has-js .rv[data-d="5"]{transition-delay:.40s}.has-js .rv[data-d="6"]{transition-delay:.48s}
+
+/* sections */
+section{position:relative}
+.sec{padding-block:var(--sec)}
+.sec-head{display:flex;flex-direction:column;gap:18px;max-width:1100px}
+.sec-head .d-lg{margin-top:4px}
+.sec-head .lede{margin-top:6px}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr)}
+.stat{padding:clamp(26px,3.4vw,44px) clamp(14px,2vw,30px);border-bottom:1px solid var(--grafite);border-right:1px solid var(--grafite);position:relative;overflow:hidden}
+.stat:nth-child(4n){border-right:0}
+.stat::before{content:"";position:absolute;inset:auto 0 0 0;height:1px;background:var(--rosso);transform:scaleX(0);transform-origin:left;transition:transform .6s var(--ease)}
+.stat:hover::before{transform:scaleX(1)}
+.stat-v{font-family:var(--f-mono);font-size:clamp(28px,4.4vw,56px);line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat-v small{font-size:.42em;color:var(--rosso);margin-left:2px;letter-spacing:0}
+.stat-k{margin-top:12px;font-size:var(--t-caption);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo)}
+@media(max-width:780px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2n){border-right:0}}
+
+/* chips */
+.chip{font-family:var(--f-mono);font-size:var(--t-caption);letter-spacing:var(--track-mid);text-transform:uppercase;padding:8px 14px;border:1px solid var(--grafite);color:var(--fumo);transition:color .35s,border-color .35s,background .35s;display:inline-flex;gap:8px;align-items:center}
+.chip i{font-style:normal;color:var(--piombo);font-size:var(--t-micro)}
+.chip:hover{color:var(--bianco);border-color:var(--piombo)}
+.chip[aria-pressed="true"]{color:var(--bianco);border-color:var(--rosso);background:rgba(218,41,28,.10)}
+.chip[aria-pressed="true"] i{color:var(--rosso)}
+
+/* showcase panel (landing) → catalogue page */
+.showcase{position:relative;margin-top:clamp(30px,4vw,48px)}
+.showcase-link{display:block;position:relative;min-height:clamp(420px,62vw,820px);overflow:hidden;isolation:isolate;border-block:1px solid var(--grafite)}
+.showcase-link .panel-img{filter:brightness(.9);transition:filter 1s var(--ease)}
+.showcase-link:hover .panel-img{filter:brightness(1.02)}
+.showcase-txt{position:absolute;left:var(--gutter);right:var(--gutter);bottom:clamp(28px,5vw,64px);display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+.showcase-txt h3{font-size:clamp(34px,6.4vw,92px);text-shadow:0 4px 40px rgba(0,0,0,.6)}
+.showcase-cats{display:flex;flex-wrap:wrap;gap:8px 0}
+.showcase-cats span{font-family:var(--f-mono);font-size:var(--t-caption);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--bianco);display:inline-flex;align-items:center}
+.showcase-cats span::after{content:"";display:inline-block;width:4px;height:4px;background:var(--rosso);margin:0 16px}
+.showcase-cats span:last-child::after{display:none}
+.showcase-link .btn{pointer-events:none}
+.showcase-link:hover .btn{border-color:var(--rosso)}
+.showcase-link:hover .btn::before{transform:translateX(0)}
+.showcase-link:hover .btn .arr{transform:translateX(6px)}
+.showcase-corner{position:absolute;top:clamp(18px,3vw,36px);right:var(--gutter);display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
+.showcase-corner .label{color:var(--bianco)}
+
+/* video panel (YouTube short, UI cropped) */
+.vid{position:relative;overflow:hidden;background:#000;border-block:1px solid var(--grafite);height:min(86vh,820px);display:flex;align-items:center;justify-content:center;isolation:isolate}
+.vid-bg{position:absolute;inset:-6%;background:center/cover no-repeat;filter:blur(24px) brightness(.28) saturate(1.1);z-index:0;transform:scale(1.05)}
+.vid-box{position:relative;z-index:1;height:100%;aspect-ratio:9/16;max-width:100%;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--grafite),0 40px 120px rgba(0,0,0,.85)}
+.vid-poster{position:absolute;inset:0;background:center/cover no-repeat;filter:brightness(.75)}
+.vid-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#000}
+.vid.landscape .vid-box{position:absolute;inset:0;height:auto;aspect-ratio:auto;box-shadow:none}
+.vid.landscape .vid-bg{display:none}
+.vid-sound{position:absolute;right:var(--gutter);bottom:clamp(16px,3vw,30px);z-index:2;display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.55);background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);color:var(--bianco);font-family:var(--f-mono);font-size:var(--t-caption);letter-spacing:var(--track-mid);text-transform:uppercase;padding:10px 14px;transition:border-color .3s,color .3s}
+.vid-sound:hover{border-color:var(--rosso);color:var(--rosso)}
+.vs-ico{width:8px;height:8px;background:var(--fumo);border-radius:9999px;transition:background .3s}
+.vid-sound[aria-pressed="true"] .vs-ico{background:var(--rosso);box-shadow:0 0 0 0 rgba(218,41,28,.6);animation:pulse 2s infinite}
+.showcase-after{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px 30px;padding-block:clamp(22px,3.5vw,44px)}
+@media(max-width:700px){.vid{height:auto}.vid-box{width:100%;height:auto}.vid-sound{right:12px;bottom:12px}}
+
+/* brand marquee */
+.brands{overflow:hidden;border-bottom:1px solid var(--grafite);padding:clamp(18px,3vw,34px) 0;background:var(--nero)}
+.brand-track{display:flex;width:max-content;animation:slide 150s linear infinite}
+.brands:hover .brand-track{animation-play-state:paused}
+.brand-track a{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,4.2vw,58px);text-transform:uppercase;letter-spacing:-.01em;line-height:1;color:var(--bianco);padding:0 clamp(12px,1.6vw,24px);display:inline-flex;align-items:center;gap:clamp(24px,3.2vw,48px);white-space:nowrap;transition:color .3s}
+.brand-track a::after{content:"";width:8px;height:8px;background:var(--rosso);flex:none}
+.brand-track a:hover{color:var(--rosso)}
+
+/* catalogue page */
+body.cat-mode main,body.cat-mode .ticker{display:none}
+.cat-page{padding-top:calc(120px + env(safe-area-inset-top,0px))}
+.cat-head{display:flex;flex-direction:column;gap:18px;padding-bottom:clamp(30px,4vw,50px)}
+.cat-head .lede{max-width:70ch}
+.cat-meta{display:flex;flex-wrap:wrap;gap:10px 30px;margin-top:6px}
+.cat-meta b{color:var(--bianco);font-weight:400}
+.cat-index{position:sticky;top:calc(52px + env(safe-area-inset-top,0px));z-index:40;display:flex;gap:6px;overflow-x:auto;padding:12px var(--gutter);background:rgba(0,0,0,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-block:1px solid var(--grafite);scrollbar-width:none}
+.cat-index::-webkit-scrollbar{display:none}
+.cat-index .chip{white-space:nowrap;flex:none}
+.cat-sec{padding-top:clamp(50px,7vw,90px)}
+.cat-sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 30px;padding-bottom:22px}
+.cat-sec-head .cat-n{font-family:var(--f-mono);font-size:var(--t-caption);color:var(--rosso);letter-spacing:var(--track-mid);display:block;margin-bottom:8px}
+.cat-sec-head p{font-size:var(--t-sm);color:var(--fumo);max-width:56ch;line-height:1.6;margin-top:4px}
+.cat-sec-head .label b{color:var(--bianco);font-weight:400}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr));gap:2px;background:var(--nero)}
+.bcard{position:relative;aspect-ratio:16/10;overflow:hidden;background:#050505;text-align:left;display:block;width:100%;cursor:pointer;isolation:isolate;color:var(--bianco)}
+.bimg{position:absolute;inset:0;background:#0a0a0a center/cover no-repeat;transition:transform 1.3s var(--ease),filter .8s var(--ease);filter:brightness(.92)}
+.bcard:hover .bimg{transform:scale(1.06);filter:brightness(1.03)}
+.bshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 42%,rgba(0,0,0,.84));pointer-events:none}
+.bline{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--rosso);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--ease)}
+.bcard:hover .bline,.bcard.flash .bline{transform:scaleX(1)}
+.bcard.flash{outline:1px solid var(--rosso);outline-offset:-1px}
+.btxt{position:absolute;left:clamp(16px,2.2vw,28px);right:clamp(16px,2.2vw,28px);bottom:clamp(16px,2.2vw,26px);display:flex;flex-direction:column;gap:6px;transition:transform .5s var(--ease)}
+.bcard:hover .btxt{transform:translateY(-4px)}
+.btxt h3{font-size:clamp(22px,2.4vw,34px);font-weight:600;text-transform:uppercase;letter-spacing:-.005em;line-height:1;text-wrap:balance;text-shadow:0 2px 20px rgba(0,0,0,.6)}
+.btxt .label{color:rgba(255,255,255,.72)}
+.btxt .label b{color:var(--bianco);font-weight:400}
+.bgo{position:absolute;right:clamp(16px,2.2vw,28px);top:clamp(16px,2.2vw,24px);width:36px;height:36px;border:1px solid rgba(255,255,255,.5);display:grid;place-items:center;background:rgba(0,0,0,.4);opacity:0;transform:translateY(-6px);transition:opacity .4s var(--ease),transform .4s var(--ease)}
+.bgo svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:1.5}
+.bcard:hover .bgo{opacity:1;transform:none}
+.cat-foot{padding-block:clamp(60px,9vw,120px);display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center}
+.nav-back{display:none;align-items:center;gap:8px}
+body.cat-mode .nav-back{display:inline-flex}
+body.cat-mode .nav-links{display:none}
+@media(max-width:600px){.cat-grid{grid-template-columns:1fr}.showcase-txt h3{font-size:clamp(30px,9vw,44px)}}
+
+/* full-bleed photo panels */
+.panel{position:relative;min-height:clamp(320px,52vw,640px);display:flex;align-items:flex-end;overflow:hidden;isolation:isolate}
+.panel-img{position:absolute;inset:-10% 0;z-index:-2;background:#050505 center/cover no-repeat;will-change:transform}
+.panel-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,0) 40%,rgba(0,0,0,.85))}
+.panel-txt{padding:clamp(28px,5vw,60px) var(--gutter);display:flex;flex-direction:column;gap:12px;max-width:820px}
+.panel-txt .display{font-size:clamp(26px,4.6vw,58px)}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.96);display:flex;flex-direction:column;opacity:0;transition:opacity .35s var(--ease)}
+.lb.on{opacity:1}
+.lb-top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px var(--gutter);padding-top:calc(14px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--grafite)}
+.lb-title{display:flex;flex-direction:column;gap:2px;min-width:0}
+.lb-title h3{font-size:15px;font-weight:500;text-transform:uppercase;letter-spacing:.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-title .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-x{width:40px;height:40px;border:1px solid var(--grafite);display:grid;place-items:center;flex:none;transition:border-color .3s,color .3s}
+.lb-x:hover{border-color:var(--rosso);color:var(--rosso)}
+.lb-x svg{width:14px;height:14px;stroke:currentColor;stroke-width:1.5;fill:none}
+.lb-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:0;padding:12px clamp(48px,7vw,90px)}
+.lb-view{position:relative;aspect-ratio:3/2;width:min(100%,calc((100vh - 230px) * 1.5));max-height:100%;overflow:hidden;background:#000;touch-action:none;cursor:zoom-in;border:1px solid var(--grafite)}
+.lb-view.zoomed{cursor:grab}
+.lb-view.dragging{cursor:grabbing}
+.lb-img{position:absolute;inset:0;background:#000 0 0/100% auto no-repeat;transform-origin:0 0;will-change:transform;opacity:0;transition:opacity .35s var(--ease)}
+.lb-img.ready{opacity:1}
+.lb-load{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo);pointer-events:none}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:1px solid var(--grafite);display:grid;place-items:center;background:rgba(0,0,0,.6);transition:border-color .3s,color .3s;font-size:18px}
+.lb-nav:hover{border-color:var(--rosso);color:var(--rosso)}
+.lb-prev{left:clamp(4px,1.2vw,22px)}.lb-next{right:clamp(4px,1.2vw,22px)}
+.lb-bot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px 20px;padding:12px var(--gutter);padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--grafite)}
+.lb-thumbs{display:flex;gap:6px;overflow-x:auto;max-width:100%;padding-bottom:2px;scrollbar-width:thin}
+.lb-th{width:66px;height:44px;flex:none;background:#0a0a0a 0 0/100% auto no-repeat;border:1px solid var(--grafite);opacity:.55;transition:opacity .3s,border-color .3s}
+.lb-th:hover{opacity:1}
+.lb-th.cur{opacity:1;border-color:var(--rosso)}
+.lb-meta{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.lb-meta .label b{color:var(--bianco);font-weight:400}
+.lb-hint{font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--piombo)}
+@media(max-width:700px){.lb-stage{padding:8px 8px}.lb-nav{width:36px;height:52px}.lb-prev{left:10px}.lb-next{right:10px}.lb-hint{display:none}}
+body.lb-open{overflow:hidden}
+
+/* services (scripts) */
+.svc{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--grafite);border:1px solid var(--grafite);margin-top:clamp(40px,6vw,72px)}
+.svc-card{background:var(--nero);padding:clamp(26px,3.2vw,44px);display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;transition:background .55s var(--ease)}
+.svc-card::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(218,41,28,.14),transparent 62%);opacity:0;transition:opacity .5s var(--ease)}
+.svc-card:hover{background:var(--notte)}
+.svc-card:hover::after{opacity:1}
+.svc-n{font-family:var(--f-mono);font-size:var(--t-caption);color:var(--rosso);letter-spacing:var(--track-mid)}
+.svc-card h3{font-size:clamp(19px,2.1vw,26px);font-weight:600;text-transform:uppercase;letter-spacing:.005em;line-height:1.12}
+.svc-card p{font-size:var(--t-body);color:var(--fumo);line-height:1.75;max-width:52ch}
+.svc-card ul{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.svc-card li{font-family:var(--f-mono);font-size:var(--t-micro);text-transform:uppercase;letter-spacing:var(--track-wide);color:var(--fumo);border:1px solid var(--grafite);border-radius:9999px;padding:3px 10px;transition:border-color .4s var(--ease),color .4s var(--ease)}
+.svc-card:hover li{border-color:var(--piombo);color:var(--bianco)}
+.svc-go{margin-top:auto;padding-top:18px;font-size:var(--t-sm);text-transform:uppercase;letter-spacing:var(--track-mid);display:inline-flex;align-items:center;gap:10px;color:var(--fumo);transition:color .4s var(--ease)}
+.svc-card:hover .svc-go{color:var(--rosso)}
+.svc-go span{display:inline-block;transition:transform .45s var(--ease)}
+.svc-card:hover .svc-go span{transform:translateX(8px)}
+@media(max-width:820px){.svc{grid-template-columns:1fr}}
+
+/* MLO */
+.mlo{background:var(--notte)}
+.mlo-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--grafite);border:1px solid var(--grafite);margin-top:clamp(30px,4vw,48px)}
+.mlo-cat{background:var(--nero);padding:26px 22px;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;transition:background .5s var(--ease)}
+.mlo-cat:hover{background:var(--notte-2)}
+.mlo-cat h3{font-size:16px;font-weight:500;text-transform:uppercase;letter-spacing:.005em}
+.mlo-cat p{font-size:var(--t-sm);color:var(--fumo);line-height:1.6}
+.mlo-cat .label{margin-top:auto;padding-top:10px}
+.mlo-cat::before{content:"";position:absolute;inset:auto 0 0 0;height:1px;background:var(--rosso);transform:scaleX(0);transform-origin:left;transition:transform .6s var(--ease)}
+.mlo-cat:hover::before{transform:scaleX(1)}
+@media(max-width:900px){.mlo-cats{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.mlo-cats{grid-template-columns:1fr}}
+
+/* livery lab 3d */
+.lab{display:grid;grid-template-columns:1.4fr 1fr;gap:clamp(30px,5vw,80px);align-items:center;margin-top:clamp(40px,6vw,72px)}
+.lab-stage{position:relative;aspect-ratio:16/10;max-width:100%;border:1px solid var(--grafite);background:radial-gradient(ellipse at 50% 92%,#1c1c1c,#000 70%);overflow:hidden;user-select:none}
+.lab-stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:linear-gradient(var(--grafite) 1px,transparent 1px),linear-gradient(90deg,var(--grafite) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 10%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,#000 10%,transparent 80%)}
+.lab-stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block}
+.lab-readout{position:absolute;left:clamp(12px,2vw,24px);top:clamp(12px,2vw,24px);display:flex;flex-direction:column;gap:2px;font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:.08em;text-transform:uppercase;color:var(--fumo);pointer-events:none}
+.lab-readout b{color:var(--bianco);font-weight:400}
+.lab-readout i{color:var(--rosso);font-style:normal}
+.lab-hint{position:absolute;left:50%;bottom:clamp(12px,2vw,22px);transform:translateX(-50%);display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo);pointer-events:none;white-space:nowrap;transition:opacity .6s var(--ease)}
+.lab-hint::before{content:"";width:34px;height:1px;background:var(--rosso);animation:swipe 2.2s var(--ease) infinite}
+@keyframes swipe{0%{transform:translateX(-10px);opacity:0}30%{opacity:1}100%{transform:translateX(14px);opacity:0}}
+.lab-stage.touched .lab-hint{opacity:0}
+.lab-fallback{position:absolute;inset:0;display:none;place-items:center;text-align:center;padding:20px;color:var(--fumo);font-size:var(--t-sm);text-transform:uppercase;letter-spacing:var(--track-mid)}
+.lab-loading{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo);pointer-events:none;display:flex;align-items:center;gap:10px}
+.lab-loading::before{content:"";width:8px;height:8px;background:var(--rosso);animation:pulse 1.6s infinite}
+.lab-stage.model-ready .lab-loading,.lab-stage.nogl .lab-loading{display:none}
+.lab-ctl .declib,.lab-ctl .ctl-row{opacity:.35;pointer-events:none;transition:opacity .4s}
+.lab-ctl.ready .declib,.lab-ctl.ready .ctl-row{opacity:1;pointer-events:auto}
+.lab-stage.nogl .lab-fallback{display:grid}
+.lab-ctl{display:flex;flex-direction:column;gap:28px}
+.ctl-group{display:flex;flex-direction:column;gap:12px}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.sw{width:38px;height:38px;border:1px solid var(--grafite);position:relative;background:var(--c);transition:transform .35s var(--ease),border-color .35s}
+.sw:hover{transform:translateY(-3px);border-color:var(--bianco)}
+.sw[aria-pressed="true"]{border-color:var(--bianco)}
+.sw[aria-pressed="true"]::after{content:"";position:absolute;inset:-5px;border:1px solid var(--rosso)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.lab-note{font-size:var(--t-sm);color:var(--fumo);line-height:1.7;max-width:46ch}
+.lab-note b{color:var(--bianco);font-weight:500}
+.declib{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px}
+.dec{aspect-ratio:1;border:1px solid var(--grafite);background:#0b0b0b;display:grid;place-items:center;padding:7px;transition:border-color .3s,transform .3s var(--ease)}
+.dec:hover{border-color:var(--bianco);transform:translateY(-3px)}
+.dec img,.dec canvas{max-width:100%;max-height:100%;display:block;object-fit:contain}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.field input:not([type=file]),.field select,.field textarea{background:#0b0b0b;border:1px solid var(--grafite);color:var(--bianco);font:400 13px/1.5 var(--f-mono);padding:11px 14px;border-radius:0;width:100%;outline:none;transition:border-color .3s;min-width:0}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--rosso)}
+.field textarea{resize:vertical;min-height:120px}
+.field-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.field-row input{flex:1}
+.range{display:grid;grid-template-columns:70px 1fr;gap:12px;align-items:center;font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:.08em;text-transform:uppercase;color:var(--fumo)}
+.range input{width:100%;accent-color:var(--rosso);margin:0}
+.ctl-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sel{border:1px solid var(--grafite);padding:14px 16px}
+input[type=file]{font:400 11px var(--f-mono);color:var(--fumo);max-width:100%}
+input[type=file]::file-selector-button{background:none;border:1px solid var(--grafite);color:var(--bianco);font:500 10px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;margin-right:10px;cursor:pointer}
+@media(max-width:560px){.ctl-row{grid-template-columns:1fr}}
+
+/* ticket modal */
+.tk{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .3s var(--ease);overflow-y:auto}
+.tk.on{opacity:1}
+.tk-box{width:min(680px,100%);background:var(--nero);border:1px solid var(--grafite);padding:clamp(22px,4vw,40px);display:flex;flex-direction:column;gap:22px;max-height:100%;overflow-y:auto;position:relative}
+.tk-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.tk-top h3{font-size:clamp(22px,3vw,34px);margin-top:6px}
+.tk form{display:flex;flex-direction:column;gap:16px}
+.tk-actions{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;margin-top:6px}
+.tk-status{font-size:var(--t-sm);color:var(--fumo);line-height:1.6;min-height:1.6em}
+.tk-status b{color:var(--bianco)}
+.tk-note{font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:.06em;color:var(--piombo);text-transform:uppercase;line-height:1.8}
+@media(max-width:900px){.lab{grid-template-columns:1fr}}
+
+/* server */
+.srv{background:var(--notte-2)}
+.srv-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:clamp(30px,5vw,90px);margin-top:clamp(40px,6vw,72px);align-items:start}
+.srv-copy{display:flex;flex-direction:column;gap:22px}
+.status{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--grafite);padding:8px 14px;font-family:var(--f-mono);font-size:var(--t-caption);letter-spacing:var(--track-mid);text-transform:uppercase;color:var(--bianco);width:max-content}
+.status::before{content:"";width:8px;height:8px;background:var(--rosso);border-radius:9999px;box-shadow:0 0 0 0 rgba(218,41,28,.6);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(218,41,28,.6)}70%{box-shadow:0 0 0 10px rgba(218,41,28,0)}100%{box-shadow:0 0 0 0 rgba(218,41,28,0)}}
+.steps{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid var(--grafite)}
+.step{padding:26px clamp(16px,2vw,28px) 30px 0;border-bottom:1px solid var(--grafite);position:relative;display:flex;flex-direction:column;gap:12px}
+.step::before{content:"";position:absolute;top:-1px;left:0;right:0;height:1px;background:var(--rosso);transform:scaleX(0);transform-origin:left;transition:transform .9s var(--ease)}
+.step.in::before{transform:scaleX(1)}
+.step:nth-child(2).in::before{transition-delay:.15s}.step:nth-child(3).in::before{transition-delay:.3s}.step:nth-child(4).in::before{transition-delay:.45s}
+.step-n{font-family:var(--f-mono);font-size:clamp(26px,3vw,40px);color:var(--grafite);line-height:1;transition:color .5s var(--ease)}
+.step:hover .step-n{color:var(--rosso)}
+.step h3{font-size:16px;font-weight:500;text-transform:uppercase;letter-spacing:.005em}
+.step p{font-size:var(--t-sm);color:var(--fumo);line-height:1.7;max-width:34ch}
+@media(max-width:900px){.srv-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.steps{grid-template-columns:1fr}}
+
+/* faq */
+.faq{border-top:1px solid var(--grafite);margin-top:clamp(40px,6vw,72px)}
+.q{border-bottom:1px solid var(--grafite)}
+.q summary{list-style:none;cursor:pointer;width:100%;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 0;font-size:clamp(14px,1.4vw,16px);font-weight:500;text-transform:uppercase;letter-spacing:.005em;transition:color .35s var(--ease)}
+.q summary::-webkit-details-marker{display:none}
+.q summary:hover{color:var(--rosso)}
+.q summary .pl{position:relative;width:14px;height:14px;flex:none}
+.q summary .pl::before,.q summary .pl::after{content:"";position:absolute;background:currentColor;transition:transform .45s var(--ease)}
+.q summary .pl::before{left:0;right:0;top:50%;height:1px}
+.q summary .pl::after{top:0;bottom:0;left:50%;width:1px}
+.q[open] summary .pl::after{transform:rotate(90deg)}
+.q .a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s var(--ease)}
+.q[open] .a{grid-template-rows:1fr}
+.q .a > div{overflow:hidden}
+.q .a p{padding:0 0 24px;color:var(--fumo);font-size:var(--t-body);line-height:1.75;max-width:70ch}
+.q .a b{color:var(--bianco);font-weight:500}
+
+/* join */
+.join{position:relative;overflow:hidden;text-align:center;padding-block:clamp(90px,14vw,180px);display:flex;flex-direction:column;align-items:center;gap:26px;isolation:isolate}
+.join-img{position:absolute;inset:-10% 0;z-index:-2;background:#000 url(img/panel-2.jpg) center/cover no-repeat;opacity:.55;will-change:transform}
+.join-bg{position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 60% 55% at 50% 60%,rgba(218,41,28,.28),transparent 70%),linear-gradient(180deg,#000,rgba(0,0,0,.3) 40%,rgba(0,0,0,.3) 60%,#000)}
+.join-logo{width:clamp(90px,12vw,150px);filter:drop-shadow(0 0 40px rgba(218,41,28,.5))}
+.join .d-lg{max-width:16ch}
+.join-cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:10px}
+
+/* footer */
+footer{background:var(--notte-2);border-top:1px solid var(--grafite);padding-block:clamp(44px,6vw,72px) clamp(28px,4vw,40px)}
+.f-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:34px}
+.f-col{display:flex;flex-direction:column;gap:10px}
+.f-col h4{font-size:var(--t-sm);text-transform:uppercase;letter-spacing:var(--track-mid);font-weight:500}
+.f-col a{font-size:var(--t-caption);text-transform:uppercase;letter-spacing:var(--track-wide);color:var(--bianco);transition:color .3s;width:max-content}
+.f-col a:hover{color:var(--rosso)}
+.f-col p{font-size:var(--t-caption);text-transform:uppercase;letter-spacing:var(--track-wide);color:var(--fumo);line-height:1.8;max-width:34ch}
+.f-brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.f-brand img{width:36px;height:36px;object-fit:contain}
+.f-bot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;margin-top:44px;padding-top:22px;border-top:1px solid var(--grafite)}
+.f-bot span{font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--fumo)}
+.soc a{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:var(--t-micro);letter-spacing:var(--track-wide);text-transform:uppercase;color:var(--bianco);transition:color .3s}
+.soc a:hover{color:var(--rosso)}
+.soc svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.3}
+@media(max-width:900px){.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.f-grid{grid-template-columns:1fr}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+  .has-js .rv{opacity:1;transform:none}
+  .hero h1 .ln i{transform:none}.hero-meta,.hero-sub,.hero-logo{opacity:1}.hero-img{transform:none}
+  #cursor{display:none}
+}
+</style>
+
+<div id="prog"></div>
+<div id="cursor"></div>
+
+<header class="nav" id="nav">
+  <span class="nav-dot" id="navDot" aria-hidden="true"></span>
+  <a class="brand" href="#top" aria-label="VGC Développement — accueil">
+    <img src="img/logo-vgc.png" alt="" width="40" height="40">
+    <span class="brand-txt">VGC Développement<small>GTA V · FiveM</small></span>
+  </a>
+  <a class="nlink nav-back" href="#top">← Accueil</a>
+  <nav class="nav-links" aria-label="Navigation principale">
+    <a class="nlink" href="#vehicules">Véhicules</a>
+    <a class="nlink" href="#scripts">Scripts</a>
+    <a class="nlink" href="#mlo">MLO</a>
+    <a class="nlink" href="#livery">Livery Lab</a>
+    <a class="nlink" href="#serveur">Serveur</a>
+    <a class="nlink" href="#tarifs">Tarifs</a>
+    <a class="nlink" href="#conditions">Conditions</a>
+    <a class="nlink" href="#faq">FAQ</a>
+  </nav>
+  <div class="nav-ctas"><a class="cta-sm" href="#ticket" data-ticket="Véhicule">Ouvrir un ticket</a><a class="cta-sm" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">Discord</a></div>
+  <button class="burger" id="burger" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span><span></span></button>
+</header>
+<div class="sheet" id="sheet" aria-hidden="true">
+  <a href="#vehicules">Véhicules</a>
+  <a href="#scripts">Scripts</a>
+  <a href="#mlo">MLO</a>
+  <a href="#livery">Livery Lab</a>
+  <a href="#serveur">Serveur</a>
+  <a href="#tarifs">Tarifs</a>
+  <a href="#conditions">Conditions</a>
+  <a href="#ticket" data-ticket="Véhicule">Ouvrir un ticket →</a>
+  <a href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">Discord →</a>
+  <span class="label">VGC Développement — véhicules addon, scripts &amp; MLO pour FiveM</span>
+</div>
+
+<main id="top">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-img"></div>
+  <div class="hero-video" id="heroVideo" aria-hidden="true"><video id="heroVid" autoplay muted loop playsinline preload="auto" poster="img/hero.jpg"><source src="video/accueil.mp4" type="video/mp4"></video></div>
+  <div class="hero-shade"></div>
+  <img class="hero-logo" src="img/logo-vgc.png" alt="">
+  <div class="hero-inner wrap">
+    <div class="hero-top">
+      <h1 class="sr-only">VGC Développement — véhicules addon, scripts et MLO pour FiveM</h1>
+      <div class="hero-meta">
+        <span class="label"><b class="num" id="heroCount">—</b> véhicules au catalogue</span>
+        <span class="label">Serveur showcase à la demande</span>
+        <span class="label">Communauté Discord FR</span>
+      </div>
+    </div>
+    <div class="hero-sub">
+      <p class="lede"><strong>VGC Développement</strong> conçoit et intègre des véhicules addon, des scripts sur mesure et des intérieurs MLO pour serveurs FiveM. Chaque véhicule du catalogue est photographié en jeu, testé sur notre serveur showcase, et spawnable par son code.</p>
+      <div class="hero-cta">
+        <a class="btn mag" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">Rejoindre le Discord <span class="arr">→</span></a>
+        <a class="btn ghost mag" href="#vehicules">Voir le catalogue</a>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-hint">Scroll</div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker"></div></div>
+
+<!-- STATS -->
+<section class="wrap" aria-label="Chiffres">
+  <div class="stats">
+    <div class="stat rv" data-d="1"><div class="stat-v"><span class="cnt" id="stVeh" data-to="0">0</span></div><div class="stat-k">Véhicules au catalogue</div></div>
+    <div class="stat rv" data-d="2"><div class="stat-v"><span class="cnt" id="stPhotos" data-to="0">0</span><small>+</small></div><div class="stat-k">Photos en jeu</div></div>
+    <div class="stat rv" data-d="3"><div class="stat-v"><span class="cnt" id="stCats" data-to="0">0</span></div><div class="stat-k">Catégories</div></div>
+    <div class="stat rv" data-d="4"><div class="stat-v"><span class="cnt" data-to="36">0</span></div><div class="stat-k">Membres Discord</div></div>
+  </div>
+</section>
+
+<!-- VÉHICULES -->
+<section class="sec wrap" id="vehicules" style="padding-bottom:0">
+  <div class="sec-head">
+    <span class="eyebrow rv">Catalogue véhicules</span>
+    <h2 class="display d-lg rv" data-d="1"><span class="num" id="vehTitleCount">—</span> véhicules.<br>Photographiés en jeu.</h2>
+    <p class="lede rv" data-d="2">Galeries de marques débadgées, véhicules lore GTA avec leur code spawn, motos, old school, course, trucks, minis et véhicules d'entreprise : tout le catalogue de notre Discord, sur une <strong>page dédiée, en grand format</strong>. Chaque fiche s'agrandit et se zoome.</p>
+  </div>
+</section>
+<section class="showcase" aria-label="Vidéo et accès au catalogue">
+  <div class="vid" id="vid">
+    <div class="vid-bg" style="background-image:url(img/catalogue.jpg)"></div>
+    <div class="vid-box" id="vidBox"><div class="vid-poster" style="background-image:url(img/catalogue.jpg)"></div><video id="catVid" class="lazy-video" muted loop playsinline preload="none" poster="img/catalogue.jpg"><source src="video/catalogue.mp4" type="video/mp4"></video></div>
+  </div>
+  <div class="showcase-after wrap">
+    <div class="showcase-cats" id="showcaseCats"></div>
+    <a class="btn big mag" href="#/catalogue">Voir le catalogue · <b class="num" id="showcaseCount">—</b>&nbsp;véhicules <span class="arr">→</span></a>
+  </div>
+  <div class="brands" aria-label="Marques du catalogue"><div class="brand-track" id="brandTrack"></div></div>
+</section>
+
+<!-- PANEL 1 -->
+<section class="panel" aria-label="Photo">
+  <div class="panel-img" data-par style="background-image:url(img/panel-1.jpg)"><video class="panel-video lazy-video" muted loop playsinline preload="none" poster="img/panel-1.jpg"><source src="video/showcase.mp4" type="video/mp4"></video></div>
+  <div class="panel-shade"></div>
+  <div class="panel-txt">
+    <span class="eyebrow rv">Sur le serveur showcase</span>
+    <h2 class="display rv" data-d="1">Chaque véhicule est testé avant d'entrer au catalogue.</h2>
+    <p class="lede rv" data-d="2">Portes, feux, vitres, dégâts, handling, tuning : rien n'est publié sans un passage en jeu.</p>
+  </div>
+</section>
+
+<!-- SCRIPTS -->
+<section class="sec wrap" id="scripts">
+  <div class="sec-head">
+    <span class="eyebrow rv">Scripts personnalisés</span>
+    <h2 class="display d-lg rv" data-d="1">Du script sur mesure,<br>pas du template.</h2>
+    <p class="lede rv" data-d="2">On développe ce que ton serveur n'a pas : un job complet, un système de garage, une interface, un mini-jeu. Compatible <strong>ESX, QBCore, Qbox</strong> et standalone, livré avec documentation et installation.</p>
+  </div>
+  <div class="svc">
+    <article class="svc-card rv" data-d="1">
+      <span class="svc-n">01</span>
+      <h3>Développement LUA</h3>
+      <p>Scripts standalone ou sur framework : jobs, systèmes de garage et de clés, menus, mini-jeux, automatisations. Écrits proprement, documentés, et testés sur le serveur showcase avant livraison.</p>
+      <ul><li>Standalone</li><li>ESX</li><li>QBCore</li><li>Qbox</li><li>ox_lib</li></ul>
+      <a class="svc-go" href="#ticket" data-ticket="Script">Commander <span>→</span></a>
+    </article>
+    <article class="svc-card rv" data-d="2">
+      <span class="svc-n">02</span>
+      <h3>Handling &amp; fichiers META</h3>
+      <p>Physique, drift, stabilité, réalisme : réglage du <code>handling.meta</code> et des scripts de handling avancés. Modification de <code>vehicles.meta</code>, <code>carcols</code>, <code>carvariations</code> et <code>layouts</code> pour que chaque véhicule se comporte comme il doit.</p>
+      <ul><li>handling.meta</li><li>vehicles.meta</li><li>carcols</li><li>carvariations</li><li>Drift</li></ul>
+      <a class="svc-go" href="#ticket" data-ticket="Handling / META">Commander <span>→</span></a>
+    </article>
+    <article class="svc-card rv" data-d="3">
+      <span class="svc-n">03</span>
+      <h3>Débadging &amp; optimisation véhicules</h3>
+      <p>Retrait des marques et logos, blindage ou déblindage, allègement des modèles pour qu'ils restent légers en mémoire et optimisables. C'est ce qui rend les répliques du catalogue utilisables sur un serveur chargé.</p>
+      <ul><li>Débadging</li><li>Blindage</li><li>Polycount</li><li>LOD</li><li>Textures</li></ul>
+      <a class="svc-go" href="#tarifs">Voir les tarifs <span>→</span></a>
+    </article>
+    <article class="svc-card rv" data-d="4">
+      <span class="svc-n">04</span>
+      <h3>Bots Discord &amp; YMAP</h3>
+      <p>Bots Node.js pour vos logs, rôles et automatisations, et création de YMAP / Map Editor pour placer vos décors, props et zones directement dans Los Santos.</p>
+      <ul><li>Node.js</li><li>Logs</li><li>Rôles</li><li>YMAP</li><li>Map Editor</li></ul>
+      <a class="svc-go" href="#ticket" data-ticket="Bot Discord / YMAP">Commander <span>→</span></a>
+    </article>
+  </div>
+</section>
+
+<!-- MLO -->
+<section class="sec mlo" id="mlo">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">MLO &amp; entreprises</span>
+      <h2 class="display d-lg rv" data-d="1">Des intérieurs<br>où travailler.</h2>
+      <p class="lede rv" data-d="2">Les MLO sont les intérieurs réels du jeu : restaurants, garages, bureaux de sécurité, bars. Ils s'accompagnent des jobs et des <strong>véhicules d'entreprise</strong> qui vont avec — Burgershot, Pizza This, Taco Bomb, LS Customs, Gruppe 6 sont déjà au catalogue. Les intérieurs se remplissent sur Discord, catégorie par catégorie.</p>
+      <a class="link-arr rv" data-d="3" href="#/catalogue/cat-entreprise">Voir les véhicules d'entreprise <span>→</span></a>
+    </div>
+    <div class="cat-grid" id="mgrid" style="margin-top:clamp(30px,4vw,48px)"></div>
+    <div class="mlo-cats">
+      <a class="mlo-cat rv" data-d="1" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener"><h3>Maisons</h3><p>Appartements et maisons meublées, prêtes pour un script housing.</p><span class="label">Catalogue Discord →</span></a>
+      <a class="mlo-cat rv" data-d="2" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener"><h3>Villas</h3><p>Propriétés haut de gamme, garages intégrés, vues sur Los Santos.</p><span class="label">Catalogue Discord →</span></a>
+      <a class="mlo-cat rv" data-d="3" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener"><h3>Garages</h3><p>Ateliers mécaniques et concessions pour vos jobs véhicules.</p><span class="label">Catalogue Discord →</span></a>
+      <a class="mlo-cat rv" data-d="4" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener"><h3>Restaurants</h3><p>Burgershot, Pizza This, Taco Bomb et autres enseignes de la ville.</p><span class="label">Catalogue Discord →</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- LIVERY LAB -->
+<section class="sec wrap" id="livery">
+  <div class="sec-head">
+    <span class="eyebrow rv">Livery Lab · 3D</span>
+    <h2 class="display d-lg rv" data-d="1">Habille-la, puis fais-la tourner.</h2>
+    <p class="lede rv" data-d="2">Ton Speedo, le vrai modèle du catalogue, à habiller comme tu veux : choisis la <strong>peinture</strong>, pique des images dans la bibliothèque, <strong>ajoute un texte ou ta propre image</strong>, puis glisse chaque sticker sur la carrosserie pour le placer, le redimensionner, le tourner. Clique-glisse dans le vide pour faire tourner le fourgon à 360°. Quand c'est prêt, envoie le brief dans un ticket.</p>
+  </div>
+  <div class="lab">
+    <div class="lab-stage rv" data-d="1" id="labStage">
+      <div class="lab-readout" id="readout"><span>Véhicule <b>Speedo · nspeedo1</b></span><span>Peinture <b>Rosso Corsa</b></span><span>Stickers <i>0</i></span></div>
+      <div class="lab-hint">Glisse pour tourner · molette pour zoomer · pose un sticker depuis la bibliothèque</div>
+      <div class="lab-loading">Chargement du Speedo</div>
+      <div class="lab-fallback">La 3D n'est pas disponible sur ce navigateur (WebGL désactivé ou modèle indisponible).</div>
+    </div>
+    <div class="lab-ctl rv" data-d="2">
+      <div class="ctl-group">
+        <span class="label">Peinture de base</span>
+        <div class="swatches" id="swatches">
+          <button class="sw" style="--c:#da291c" data-paint="#da291c" data-stripe="#ffffff" data-name="Rosso Corsa" aria-pressed="true" aria-label="Rosso Corsa"></button>
+          <button class="sw" style="--c:#f2f2f2" data-paint="#f2f2f2" data-stripe="#da291c" data-name="Bianco" aria-pressed="false" aria-label="Bianco"></button>
+          <button class="sw" style="--c:#141414" data-paint="#141414" data-stripe="#da291c" data-name="Nero Opaco" aria-pressed="false" aria-label="Nero opaco"></button>
+          <button class="sw" style="--c:#f0c200" data-paint="#f0c200" data-stripe="#141414" data-name="Giallo Modena" aria-pressed="false" aria-label="Giallo Modena"></button>
+          <button class="sw" style="--c:#1c4ea6" data-paint="#1c4ea6" data-stripe="#ffffff" data-name="Blu Tour de France" aria-pressed="false" aria-label="Blu Tour de France"></button>
+          <button class="sw" style="--c:#2a6b3f" data-paint="#2a6b3f" data-stripe="#f0c200" data-name="Verde British" aria-pressed="false" aria-label="Verde British"></button>
+          <button class="sw" style="--c:#8a8f96" data-paint="#8a8f96" data-stripe="#141414" data-name="Grigio Nardo" aria-pressed="false" aria-label="Grigio Nardo"></button>
+          <button class="sw" style="--c:#ff7a00" data-paint="#ff7a00" data-stripe="#141414" data-name="Arancio VGC" aria-pressed="false" aria-label="Arancio VGC"></button>
+        </div>
+      </div>
+      <div class="ctl-group">
+        <span class="label">Bibliothèque — clique pour poser sur le fourgon</span>
+        <div class="declib" id="declib"></div>
+      </div>
+      <div class="ctl-group ctl-row">
+        <div class="field"><span class="label">Ajouter un texte</span><div class="field-row"><input id="labText" maxlength="24" placeholder="PIZZA THIS" aria-label="Texte du sticker"><button class="cta-sm" id="labTextBtn" type="button">Ajouter</button></div></div>
+        <div class="field"><span class="label">Ta propre image (PNG / JPG)</span><input id="labFile" type="file" accept="image/*" aria-label="Importer une image"></div>
+      </div>
+      <div class="ctl-group sel" id="labSel" hidden>
+        <span class="label">Sticker sélectionné · <b id="labSelName" style="color:var(--bianco);font-weight:400"></b></span>
+        <label class="range"><span>Taille</span><input id="labSize" type="range" min="0.2" max="2.4" step="0.02" value="0.8"></label>
+        <label class="range"><span>Rotation</span><input id="labRot" type="range" min="-180" max="180" step="1" value="0"></label>
+        <div class="field-row"><button class="cta-sm" id="labFlip" type="button">Miroir</button><button class="cta-sm" id="labDel" type="button">Supprimer</button></div>
+      </div>
+      <p class="lab-note">Glisse un sticker pour le déplacer sur la carrosserie ; clique dans le vide pour le désélectionner et tourner le fourgon. Le brief envoyé décrit la peinture et chaque sticker (face, taille, rotation) : on en fait la livery finale en <b>DDS 4K</b> pour ton véhicule.</p>
+      <div class="field-row"><a class="btn" href="#ticket" id="labSend">Envoyer ce brief dans un ticket <span class="arr">→</span></a><button class="cta-sm" id="labReset" type="button">Réinitialiser</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVEUR SHOWCASE -->
+<section class="sec srv" id="serveur">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">Serveur showcase</span>
+      <h2 class="display d-lg rv" data-d="1">Un serveur FiveM,<br>ouvert à la demande.</h2>
+    </div>
+    <div class="srv-grid">
+      <div class="srv-copy rv" data-d="1">
+        <span class="status">Serveur « VGC Développement » · sur demande</span>
+        <p class="lede">Le serveur showcase n'est pas ouvert en permanence : il démarre quand quelqu'un veut voir les véhicules, les scripts ou les MLO <strong>en conditions réelles</strong>. Tu fais la demande sur Discord, le serveur se lance, tu te connectes, tu testes tout ce que tu veux.</p>
+        <p class="lede">Le canal <strong>#annonce</strong> du Discord affiche en direct les démarrages et fermetures du serveur.</p>
+        <a class="btn mag" href="#ticket" data-ticket="Serveur showcase">Demander une session <span class="arr">→</span></a>
+      </div>
+      <div class="steps">
+        <div class="step rv" data-d="1"><span class="step-n">01</span><h3>Demande</h3><p>Ouvre un ticket dans <code>#demandes-de-tickets</code> avec ce que tu veux voir : véhicules, script, MLO.</p></div>
+        <div class="step rv" data-d="2"><span class="step-n">02</span><h3>Démarrage</h3><p>Le serveur est lancé pour toi. L'annonce « en train de démarrer » apparaît dans <code>#annonce</code>.</p></div>
+        <div class="step rv" data-d="3"><span class="step-n">03</span><h3>Connexion</h3><p>La commande de connexion (F8) est partagée dans <code>#f8-connect</code>, réservé aux membres.</p></div>
+        <div class="step rv" data-d="4"><span class="step-n">04</span><h3>Test en jeu</h3><p>Spawne les véhicules avec leur code (<code>/car …</code>), visite les MLO, essaie les scripts. Puis on discute intégration.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TARIFS -->
+<section class="sec price" id="tarifs">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow rv">Tarification</span>
+      <h2 class="display d-lg rv" data-d="1">Des prix affichés.<br>Pas de surprise.</h2>
+      <p class="lede rv" data-d="2">Les tarifs ci-dessous sont ceux publiés sur notre Discord. Tout ce qui n'y figure pas (script complet, MLO, projet sur mesure) est chiffré dans ton ticket avant tout engagement.</p>
+    </div>
+    <div class="price-grid">
+      <ul class="plist rv" data-d="1" id="plist">__VGC_PRICES__</ul>
+      <div class="price-side rv" data-d="2">
+        <p class="lede">Une commande = un ticket. Tu y reçois la confirmation du prix, le délai, puis la livraison et le suivi des corrections.</p>
+        <div class="contact">
+          <span class="label">Courriel de contact</span>
+          <a href="mailto:__VGC_EMAIL__">__VGC_EMAIL__</a>
+          <span class="label" style="margin-top:8px">Discord</span>
+          <a href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">discord.gg/AZffQgb4Xd</a>
+        </div>
+        <p class="lede" style="font-size:var(--t-sm)">Aucun paiement n'est demandé en dehors du ticket Discord ou de ce courriel. Les prix s'entendent en dollars, taxes et frais inclus, par véhicule ou par prestation. <strong>Tous les achats sont finaux. Le handling n'est pas inclus</strong> (réglages à votre charge, ou prestation handling sur devis).</p>
+        <a class="btn mag" href="#ticket" data-ticket="Véhicule">Ouvrir un ticket <span class="arr">→</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONDITIONS -->
+<section class="sec wrap" id="conditions">
+  <div class="sec-head">
+    <span class="eyebrow rv">Conditions légales</span>
+    <h2 class="display d-lg rv" data-d="1">Conditions générales<br>de vente et d'utilisation.</h2>
+    <p class="lede rv" data-d="2">Lisibles en cinq minutes, opposables dès la première commande. L'essentiel tient en quatre points ; le détail suit, article par article.</p>
+  </div>
+  <div class="legal-wrap">
+    <nav class="legal-toc rv" aria-label="Sommaire des conditions">
+      <a href="#art-1">01 · Objet</a><a href="#art-2">02 · Contenus</a><a href="#art-3">03 · Répliques</a><a href="#art-4">04 · Vanilla</a><a href="#art-5">05 · Commande</a><a href="#art-6">06 · Livraison</a><a href="#art-7">07 · Ni repris, ni échangé, ni remboursé</a><a href="#art-8">08 · Correction</a><a href="#art-9">09 · Licence</a><a href="#art-10">10 · Marques</a><a href="#art-11">11 · Responsabilité</a><a href="#art-12">12 · Confidentialité</a><a href="#art-13">13 · Droit applicable</a>
+    </nav>
+    <div>
+      <div class="legal-key rv" data-d="1">
+        <div><i>Règle 1</i><b>Ni repris, ni échangé, ni remboursé</b><span>Les contenus numériques sont livrés une fois pour toutes. Aucun retour, aucun échange, aucun remboursement.</span></div>
+        <div><i>Règle 2</i><b>Nous pouvons tout corriger</b><span>Un défaut sur ce que nous avons livré ? Il est corrigé. C'est notre engagement en contrepartie de la règle 1.</span></div>
+        <div><i>Règle 3</i><b>Répliques : légères par choix</b><span>Les répliques non badgées contiennent peu ou pas de modifications, pour rester les plus légères possible et optimisables.</span></div>
+        <div><i>Règle 4</i><b>Vanilla : 50+ modifications</b><span>Les véhicules Vanilla / GTA-friendly disposent en moyenne de plus de cinquante modifications.</span></div>
+      </div>
+      <div class="legal rv" data-d="2">
+        <p class="pre"><b>Préambule.</b> Les présentes conditions générales de vente et d'utilisation (les « Conditions ») régissent, à l'exclusion de toute autre, l'ensemble des relations entre <b>VGC Développement</b> (« VGC », « nous ») et toute personne physique ou morale passant commande, recevant ou utilisant l'un de ses contenus (le « Client », « vous »). Toute commande, quel qu'en soit le canal, emporte acceptation pleine, entière et sans réserve des Conditions en vigueur au jour de la commande. Nul ne peut s'en prévaloir sans les avoir acceptées ; nul ne peut y déroger sans notre accord écrit.</p>
+
+        <article id="art-1"><h3><i>Art. 1</i>Objet et champ d'application</h3>
+          <p>Les Conditions s'appliquent à toute prestation fournie par VGC : conception, conversion, débadging, blindage ou déblindage, optimisation et intégration de véhicules addon ; création de liveries ; développement de scripts LUA, de bots Discord et de fichiers YMAP ; réglage de fichiers META et de handling ; fourniture d'intérieurs MLO ; ainsi que toute prestation connexe convenue dans un ticket (ensemble, les « Contenus »).</p>
+          <p>Elles prévalent sur tout document émanant du Client, y compris ses propres conditions d'achat, sauf stipulation contraire expresse, écrite et signée par VGC.</p>
+        </article>
+
+        <article id="art-2"><h3><i>Art. 2</i>Nature des Contenus</h3>
+          <p>Les Contenus sont des <b>biens numériques immatériels</b>, livrés par voie électronique et exécutés dès leur mise à disposition. Le Client reconnaît qu'ils sont destinés à un environnement technique (serveur FiveM, framework, ressources tierces) qu'il maîtrise seul, et que leur bon fonctionnement dépend en partie de cet environnement.</p>
+          <p>Les photographies du catalogue sont prises en jeu sur notre serveur showcase. Elles constituent une représentation fidèle des Contenus au jour de la prise de vue ; les couleurs, liveries et réglages présentés peuvent être modifiés par le Client après livraison.</p>
+        </article>
+
+        <article id="art-3"><h3><i>Art. 3</i>Véhicules répliques non badgés</h3>
+          <p>Les véhicules dits « répliques » ou « Debadger » sont inspirés de modèles existants dont <b>toute marque, tout logo et tout badge ont été retirés</b>. Par un choix technique assumé et porté à la connaissance du Client avant toute commande, ces véhicules <b>ne contiennent pas, ou presque pas, de modifications</b> (pièces de tuning, extras, variantes de carrosserie), afin de demeurer <b>les plus légers possible</b> en mémoire et en streaming, et de rester <b>pleinement optimisables</b>.</p>
+          <p>Le Client reconnaît avoir été dûment informé de cette caractéristique. L'absence ou le faible nombre de modifications sur un véhicule réplique ne saurait, en aucun cas, être qualifié de défaut, de non-conformité ou de vice caché, ni ouvrir droit à une quelconque réclamation.</p>
+        </article>
+
+        <article id="art-4"><h3><i>Art. 4</i>Véhicules Vanilla et GTA-friendly</h3>
+          <p>Les véhicules « Vanilla » ou « GTA-friendly » (dits aussi lore-friendly) sont conçus dans l'univers du jeu et disposent, <b>en moyenne, de plus de cinquante (50) modifications</b> : tuning, extras, liveries, variantes. Ce chiffre est une moyenne constatée sur l'ensemble du catalogue ; le nombre exact varie d'un modèle à l'autre et est précisé sur la fiche du véhicule ou, à défaut, sur simple demande avant commande.</p>
+        </article>
+
+        <article id="art-5"><h3><i>Art. 5</i>Commande, prix et paiement</h3>
+          <p>Les prix sont ceux affichés dans la section <a href="#tarifs" style="color:var(--bianco);border-bottom:1px solid var(--grafite)">Tarification</a> ou, pour toute prestation qui n'y figure pas, ceux communiqués par écrit dans le ticket. Ils s'entendent en dollars, par véhicule ou par prestation, hors frais éventuels de plateforme.</p>
+          <p>Une commande n'est <b>ferme et définitive</b> qu'après (i) confirmation écrite de VGC dans le ticket et (ii) réception intégrale du paiement. VGC se réserve le droit de refuser toute commande, notamment en cas de demande contraire aux présentes, aux règles de la plateforme ou à la loi.</p>
+          <p>Aucun paiement n'est jamais sollicité en dehors du ticket Discord officiel ou du courriel de contact indiqué sur ce site. Toute sollicitation contraire est étrangère à VGC.</p>
+          <p><b>Le réglage du handling n'est pas inclus</b> dans le prix des véhicules : il demeure à la charge du Client, sauf prestation de handling commandée séparément et chiffrée dans le ticket.</p>
+        </article>
+
+        <article id="art-6"><h3><i>Art. 6</i>Livraison et réception</h3>
+          <p>La livraison s'effectue par voie électronique, dans le ticket ou par lien de téléchargement. Les délais annoncés sont indicatifs et courent à compter de la réception du paiement et de l'ensemble des éléments nécessaires (modèle, références, framework, accès).</p>
+          <p>Le Client s'engage à <b>installer et tester les Contenus à réception</b> et à signaler tout dysfonctionnement dans le ticket, accompagné des éléments utiles (logs, captures, version du framework), dans un délai de <b>sept (7) jours</b> suivant la livraison. Passé ce délai, les Contenus sont réputés acceptés sans réserve, sans préjudice de la garantie de correction prévue à l'article 8.</p>
+        </article>
+
+        <article id="art-7"><h3><i>Art. 7</i>Ni repris, ni échangé, ni remboursé</h3>
+          <p>Eu égard à la nature numérique des Contenus, livrés et intégralement exécutés dès leur mise à disposition, et conformément aux règles applicables aux contenus numériques fournis sur support immatériel, <b>aucune commande ne peut faire l'objet d'un retour, d'un échange ou d'un remboursement, total ou partiel</b>, une fois la livraison effectuée.</p>
+          <p>En passant commande, le Client <b>demande expressément l'exécution immédiate de la prestation</b> et <b>renonce en connaissance de cause à tout droit de rétractation</b>, dans toute la mesure permise par la loi. Un changement d'avis, une incompatibilité avec une ressource tierce non déclarée lors de la commande, une évolution de la plateforme ou du serveur du Client, ou une modification opérée par le Client ou par un tiers ne constituent pas des motifs de remboursement.</p>
+        </article>
+
+        <article id="art-8"><h3><i>Art. 8</i>Garantie de correction — « nous pouvons tout corriger »</h3>
+          <p>En contrepartie de l'article 7, VGC prend un engagement clair : <b>tout défaut de fonctionnement imputable au Contenu livré est corrigé</b>, sans frais supplémentaires, dans un délai raisonnable. Sont notamment visés : véhicule invisible ou non spawnable, texture ou livery manquante, collision défaillante, erreur de script reproductible, fichier META incohérent.</p>
+          <p>La garantie s'exerce exclusivement via le ticket d'origine, sur communication des éléments permettant de reproduire le défaut. Elle ne couvre pas : les modifications apportées par le Client ou par un tiers ; les conflits avec des ressources, frameworks ou versions non déclarés lors de la commande ; les évolutions ultérieures de la plateforme FiveM ou du jeu ; les demandes d'ajout de fonctionnalités, lesquelles font l'objet d'un nouveau devis.</p>
+        </article>
+
+        <article id="art-9"><h3><i>Art. 9</i>Licence d'utilisation et propriété intellectuelle</h3>
+          <p>Les Contenus demeurent la propriété de VGC et, le cas échéant, de leurs auteurs d'origine, dont les crédits sont conservés. La commande confère au Client une <b>licence d'utilisation personnelle, non exclusive, non transférable et non cessible</b>, limitée à l'exploitation des Contenus sur le ou les serveurs qu'il administre.</p>
+          <ul>
+            <li>Sont strictement interdits : la <b>revente</b>, la redistribution, le partage public ou privé (« leak »), la location et la sous-licence des Contenus, en tout ou partie.</li>
+            <li>Sont également interdits : la suppression ou la modification des crédits, la décompilation, l'obfuscation inverse et toute exploitation en dehors du cadre convenu.</li>
+            <li>Toute violation entraîne la résiliation immédiate de la licence, l'exclusion définitive de la communauté et, le cas échéant, l'engagement de poursuites.</li>
+          </ul>
+        </article>
+
+        <article id="art-10"><h3><i>Art. 10</i>Marques, tiers et non-affiliation</h3>
+          <p>Grand Theft Auto V et Rockstar Games sont des marques de Take-Two Interactive ; FiveM est une plateforme éditée par Cfx.re. Les noms de constructeurs automobiles cités dans le catalogue le sont à titre <b>strictement descriptif et référentiel</b>, pour identifier l'inspiration d'un modèle. VGC n'est affilié à, ni parrainé par, ni approuvé par aucune de ces entités. C'est précisément la raison pour laquelle les véhicules répliques sont livrés débadgés.</p>
+        </article>
+
+        <article id="art-11"><h3><i>Art. 11</i>Responsabilité</h3>
+          <p>Chaque Client demeure seul responsable de l'usage qu'il fait des Contenus, des scripts, des codes et des conseils reçus, ainsi que de la conformité de son serveur aux règles de la plateforme. VGC ne saurait être tenu responsable des dommages indirects ou immatériels, notamment : interruption ou crash de serveur, perte de données, perte de joueurs ou de revenus, sanction prononcée par un tiers, ou baisse de performance résultant de ressources tierces.</p>
+          <p>En toute hypothèse, la responsabilité de VGC, si elle devait être retenue, est expressément limitée au montant effectivement payé par le Client pour le Contenu concerné.</p>
+        </article>
+
+        <article id="art-12"><h3><i>Art. 12</i>Confidentialité et communauté</h3>
+          <p>Les tickets, messages privés, fichiers et échanges techniques sont <b>confidentiels</b> et ne peuvent être diffusés à l'extérieur sans accord écrit. Aucune donnée personnelle sensible ne doit être partagée publiquement sur le Discord. Toute tentative de vol de contenu, d'ingénierie sociale, d'escroquerie, de pression ou de menace entraîne des sanctions immédiates (mute, expulsion, bannissement), sans préjudice de toute autre action.</p>
+        </article>
+
+        <article id="art-13"><h3><i>Art. 13</i>Droit applicable, litiges et dispositions finales</h3>
+          <p>Les Conditions sont régies par les lois applicables au lieu d'établissement de VGC Développement (province de Québec, Canada), à l'exclusion de toute règle de conflit de lois. Tout différend fera d'abord l'objet d'une tentative de règlement amiable dans le ticket concerné ; à défaut d'accord dans les trente (30) jours, il relèvera de la compétence exclusive des tribunaux de ce ressort.</p>
+          <p>Si l'une quelconque des présentes stipulations était déclarée nulle ou inapplicable, les autres conserveraient leur plein effet. VGC peut modifier les Conditions à tout moment ; la version applicable est celle en vigueur au jour de la commande, telle que publiée sur ce site.</p>
+          <p class="sig">VGC Développement — dernière mise à jour : 21 septembre 2026<br>Contact : <a href="mailto:__VGC_EMAIL__" style="color:var(--bianco)">__VGC_EMAIL__</a> · Discord : discord.gg/AZffQgb4Xd</p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec wrap" id="faq">
+  <div class="sec-head">
+    <span class="eyebrow rv">FAQ</span>
+    <h2 class="display d-lg rv" data-d="1">Ce qu'on nous demande le plus.</h2>
+  </div>
+  <div class="faq rv" data-d="1">
+    <details class="q" open>
+      <summary>« Debadger », ça veut dire quoi ?<span class="pl" aria-hidden="true"></span></summary>
+      <div class="a"><div><p>Ce sont des véhicules inspirés de vraies marques dont les <b>logos et badges ont été retirés</b> (« debadged »). On garde la silhouette et le niveau de détail, sans le nom de la marque sur la carrosserie — le format habituel pour les serveurs RP.</p></div></div>
+    </details>
+    <details class="q">
+      <summary>Comment obtenir un véhicule du catalogue sur mon serveur ?<span class="pl" aria-hidden="true"></span></summary>
+      <div class="a"><div><p>Rejoins le Discord, ouvre un ticket avec le nom du véhicule (ou de la galerie de marque) et ton framework. On te répond avec les conditions et, si besoin, une session sur le serveur showcase pour le tester avant.</p></div></div>
+    </details>
+    <details class="q">
+      <summary>Le serveur showcase est-il accessible à tout le monde ?<span class="pl" aria-hidden="true"></span></summary>
+      <div class="a"><div><p>Il est ouvert <b>à la demande, aux membres du Discord</b>. La commande de connexion est partagée dans un salon réservé une fois le serveur démarré. Pas d'IP publique, pas de file d'attente : une session, un créneau.</p></div></div>
+    </details>
+    <details class="q">
+      <summary>Vous faites des scripts pour quel framework ?<span class="pl" aria-hidden="true"></span></summary>
+      <div class="a"><div><p><b>ESX, QBCore, Qbox</b> et standalone. Précise ton framework, ton inventaire (ox_inventory, qb-inventory…) et ton système de target dans le ticket : c'est ce qui détermine le temps d'intégration.</p></div></div>
+    </details>
+    <details class="q">
+      <summary>Combien ça coûte ?<span class="pl" aria-hidden="true"></span></summary>
+      <div class="a"><div><p>Chaque demande est chiffrée dans son ticket, selon le véhicule, le script ou le MLO concerné. <b>Aucun paiement hors Discord</b> : si quelqu'un te contacte ailleurs au nom de VGC, ce n'est pas nous.</p></div></div>
+    </details>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section class="join wrap" id="join">
+  <div class="join-img" data-par></div>
+  <div class="join-bg"></div>
+  <img class="join-logo rv" src="img/logo-vgc.png" alt="">
+  <span class="eyebrow rv" data-d="1" style="justify-content:center">Rejoindre</span>
+  <h2 class="display d-lg rv" data-d="2">Ton prochain véhicule est déjà au catalogue.</h2>
+  <p class="lede rv" data-d="3" style="text-align:center">Invitation ouverte. Ouvre un ticket, dis ce que tu cherches, on te montre en jeu.</p>
+  <div class="join-cta rv" data-d="4">
+    <a class="btn big mag" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">Rejoindre le Discord <span class="arr">→</span></a>
+    <a class="btn ghost mag" href="#vehicules">Voir le catalogue</a>
+  </div>
+</section>
+
+</main>
+
+<!-- CATALOGUE (page, route #/catalogue) -->
+<div class="cat-page" id="catPage" hidden>
+  <header class="cat-head wrap">
+    <span class="eyebrow">VGC Développement · Catalogue véhicules</span>
+    <h1 class="display d-xl">Le catalogue.</h1>
+    <p class="lede">Chaque fiche s'ouvre en grand : photos prises en jeu, zoom sur les détails, code à taper pour spawner, lien vers le post Discord d'origine. Les galeries de marques regroupent tous les modèles débadgés d'un même constructeur.</p>
+    <div class="cat-meta" id="catMeta"></div>
+  </header>
+  <nav class="cat-index" id="catIndex" aria-label="Catégories"></nav>
+  <div id="catSections"></div>
+  <div class="cat-foot wrap">
+    <span class="eyebrow" style="justify-content:center">Et ensuite</span>
+    <h2 class="display d-lg">Tu as vu ce qu'il te faut ?</h2>
+    <p class="lede" style="text-align:center">Ouvre un ticket avec le nom du véhicule ou une capture de la fiche. On confirme le prix, on livre, on corrige si besoin.</p>
+    <div class="join-cta"><a class="btn big mag" href="#ticket" data-ticket="Véhicule">Ouvrir un ticket <span class="arr">→</span></a><a class="btn ghost" href="#top">← Retour à l'accueil</a></div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div class="f-col">
+        <div class="f-brand"><img src="img/logo-vgc.png" alt=""><span class="brand-txt">VGC Développement</span></div>
+        <p>Véhicules addon, scripts personnalisés et MLO pour serveurs FiveM. Communauté Discord francophone.</p>
+      </div>
+      <div class="f-col">
+        <h4>Catalogue</h4>
+        <a href="#vehicules">Véhicules</a>
+        <a href="#mlo">MLO &amp; entreprises</a>
+        <a href="#livery">Livery Lab</a>
+      </div>
+      <div class="f-col">
+        <h4>Services</h4>
+        <a href="#scripts">Scripts sur mesure</a>
+        <a href="#serveur">Serveur showcase</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <div class="f-col">
+        <h4>Discord</h4>
+        <a href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">Invitation</a>
+        <a href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">#demandes-de-tickets</a>
+        <a href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">#annonce</a>
+      </div>
+    </div>
+    <div class="f-bot">
+      <span>© 2026 VGC Développement · GTA V et FiveM sont des marques de leurs propriétaires · projet communautaire non affilié</span>
+      <div class="soc"><a href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener"><svg viewBox="0 0 16 16"><path d="M3 4.5C4.3 3.9 5.6 3.5 7 3.3l.4.8c.4 0 .8 0 1.2 0l.4-.8c1.4.2 2.7.6 4 1.2 1 2.2 1.4 4.6 1.2 7-1 .8-2.2 1.3-3.4 1.6l-.7-1.1c.4-.2.8-.3 1.1-.5-.1 0-.2-.1-.3-.2-2.1 1-4.4 1-6.5 0-.1.1-.2.2-.3.2.4.2.7.4 1.1.5L4.5 13c-1.2-.3-2.4-.8-3.4-1.6-.3-2.4.2-4.8 1.9-6.9z"/><circle cx="5.9" cy="8.8" r="1"/><circle cx="10.1" cy="8.8" r="1"/></svg>discord.gg/AZffQgb4Xd</a></div>
+    </div>
+  </div>
+</footer>
+
+<!-- TICKET -->
+<div class="tk" id="tk" hidden role="dialog" aria-modal="true" aria-labelledby="tkTitle">
+  <div class="tk-box">
+    <div class="tk-top">
+      <div><span class="eyebrow">Ticket · depuis le site</span><h3 id="tkTitle" class="display">Ouvrir un ticket</h3></div>
+      <button class="lb-x" id="tkClose" type="button" aria-label="Fermer"><svg viewBox="0 0 16 16"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+    </div>
+    <p class="lede" style="font-size:var(--t-sm)">Pas besoin de venir sur Discord : décris ta demande, elle arrive directement dans notre salon tickets avec la mention « depuis le site ». On te répond sur Discord ou par courriel.</p>
+    <form id="tkForm" novalidate>
+      <div class="field"><label class="label" for="tkName">Ton pseudo Discord ou ton nom</label><input id="tkName" name="name" maxlength="80" required autocomplete="name"></div>
+      <div class="field"><label class="label" for="tkMail">Courriel — pour te répondre si tu n'es pas sur Discord</label><input id="tkMail" name="email" type="email" maxlength="120" autocomplete="email"></div>
+      <div class="field"><label class="label" for="tkSubject">Sujet</label><select id="tkSubject" name="subject"><option>Véhicule</option><option>Livery</option><option>Script</option><option>Handling / META</option><option>MLO</option><option>Bot Discord / YMAP</option><option>Serveur showcase</option><option>Autre</option></select></div>
+      <div class="field"><label class="label" for="tkMsg">Ta demande</label><textarea id="tkMsg" name="message" rows="6" maxlength="1500" required placeholder="Nom du véhicule, framework de ton serveur, ce que tu attends…"></textarea></div>
+      <input id="tkHp" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px" aria-hidden="true">
+      <div class="tk-actions"><button class="btn" type="submit">Envoyer le ticket <span class="arr">→</span></button><a class="link-arr" href="https://discord.gg/AZffQgb4Xd" target="_blank" rel="noopener">ou via Discord <span>→</span></a></div>
+      <p class="tk-status" id="tkStatus" aria-live="polite"></p>
+      <p class="tk-note">Aucun paiement n'est demandé par ce formulaire. Courriel officiel : __VGC_EMAIL__</p>
+    </form>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Photos du véhicule">
+  <div class="lb-top">
+    <div class="lb-title"><h3 id="lbName">—</h3><span class="label" id="lbSub"></span></div>
+    <button class="lb-x" id="lbClose" aria-label="Fermer"><svg viewBox="0 0 16 16"><path d="M3 3l10 10M13 3L3 13"/></svg></button>
+  </div>
+  <div class="lb-stage">
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Photo précédente">←</button>
+    <div class="lb-view" id="lbView"><div class="lb-img" id="lbImg"></div><div class="lb-load" id="lbLoad">Chargement</div></div>
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Photo suivante">→</button>
+  </div>
+  <div class="lb-bot">
+    <div class="lb-thumbs" id="lbThumbs"></div>
+    <div class="lb-meta">
+      <span class="label" id="lbCount"></span>
+      <span class="label" id="lbSpawn"></span>
+      <a class="link-arr" id="lbDiscord" href="#" target="_blank" rel="noopener" style="font-size:var(--t-caption)">Voir le post Discord <span>→</span></a>
+      <span class="lb-hint">Molette / double-clic : zoom · glisser : déplacer · ← → : naviguer</span>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+__VGC_LIB_GLTF__
+</script>
+<script>
+__VGC_LIB_DECAL__
+</script>
+<script>window.VGC_MODEL_B64 = "__VGC_MODEL_B64__";</script>
+<script>
+var VGC_DATA = __VGC_DATA__;
+</script>
+<script>
+(function(){
+  var root=document.documentElement, reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  root.classList.add('has-js');
+  var D = VGC_DATA, GUILD = '1266397169334747147';
+  var MLO_FORUMS = [];
+  var CAT_ORDER = ['Voitures','Lore GTA','Motos','Old School','Course','Trucks','Mini','Entreprise'];
+  var vehicles = D.items.filter(function(it){ return MLO_FORUMS.indexOf(it.forum) < 0; });
+  var mlos = D.items.filter(function(it){ return MLO_FORUMS.indexOf(it.forum) >= 0; });
+
+  /* ---------- helpers ---------- */
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function fmt(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' '); }
+  function thumbStyle(it){
+    var s = D.sheets[it.sheet]; if(!s) return '';
+    var x = s.cols > 1 ? it.sx/(s.cols-1)*100 : 0, y = s.rows > 1 ? it.sy/(s.rows-1)*100 : 0;
+    return 'background-size:'+(s.cols*100)+'% '+(s.rows*100)+'%;background-position:'+x.toFixed(3)+'% '+y.toFixed(3)+'%';
+  }
+  function photosLabel(it){ return it.total > 1 ? it.total+' photos' : '1 photo'; }
+  function isBrand(it){ return it.forum==='catalogue-voiture' || it.forum==='catalogue-old-school'; }
+  function cardHTML(it){
+    var sub = it.spawn ? 'Code <b>/car '+esc(it.spawn)+'</b> · '+photosLabel(it) : (isBrand(it) ? 'Galerie de marque · <b>'+photosLabel(it)+'</b>' : '<b>'+photosLabel(it)+'</b>');
+    return '<button class="bcard" type="button" data-i="'+it.i+'" aria-label="Ouvrir : '+esc(it.name)+'">'+
+      '<div class="bimg" data-sheet="'+esc(it.sheet)+'" style="'+thumbStyle(it)+'"></div><div class="bshade"></div><div class="bline"></div>'+
+      '<span class="bgo" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14M7 5v4M5 7h4"/></svg></span>'+
+      '<div class="btxt"><h3>'+esc(it.name)+'</h3><span class="label">'+sub+'</span></div></button>';
+  }
+
+  /* ---------- lazy sheets ---------- */
+  var sheetIO = new IntersectionObserver(function(es){
+    es.forEach(function(en){ if(en.isIntersecting){ var el = en.target; if(el.dataset.sheet) el.style.backgroundImage = 'url('+el.dataset.sheet+')'; sheetIO.unobserve(el); } });
+  },{rootMargin:'400px 0px'});
+  function watchThumbs(scope){ scope.querySelectorAll('.bimg[data-sheet]').forEach(function(el){ sheetIO.observe(el); }); }
+
+  /* ---------- landing: counts, categories, brand marquee ---------- */
+  var counts = {}; vehicles.forEach(function(it){ counts[it.cat] = (counts[it.cat]||0)+1; });
+  var cats = CAT_ORDER.filter(function(c){ return counts[c]; }).concat(Object.keys(counts).filter(function(c){ return CAT_ORDER.indexOf(c)<0; }));
+  ['vehTitleCount','showcaseCount','heroCount'].forEach(function(id){ var el = document.getElementById(id); if(el) el.textContent = vehicles.length; });
+  document.getElementById('showcaseCats').innerHTML = cats.map(function(c){ return '<span>'+esc(c)+'&nbsp;<i style="font-style:normal;color:var(--fumo)">'+counts[c]+'</i></span>'; }).join('');
+  var brands = vehicles.filter(isBrand);
+  var bt = document.getElementById('brandTrack');
+  bt.innerHTML = brands.map(function(it){ return '<a href="#/catalogue/'+it.i+'">'+esc(it.name)+'</a>'; }).join('');
+  bt.innerHTML += bt.innerHTML;
+
+  var mgrid = document.getElementById('mgrid');
+  if(mlos.length){ mgrid.innerHTML = mlos.map(cardHTML).join(''); watchThumbs(mgrid); } else { mgrid.hidden = true; }
+
+  /* stats */
+  var photos = D.items.reduce(function(a,it){ return a+it.total; },0);
+  document.getElementById('stVeh').dataset.to = vehicles.length;
+  document.getElementById('stPhotos').dataset.to = photos;
+  document.getElementById('stCats').dataset.to = cats.length;
+
+  /* ---------- catalogue page (hash route #/catalogue, #/catalogue/<item>, #/catalogue/cat-<slug>) ---------- */
+  var catPage = document.getElementById('catPage'), catBuilt = false;
+  var CAT_DESC = {'Voitures':'Galeries de marques débadgées : chaque fiche regroupe les modèles d\'un constructeur.','Lore GTA':'Véhicules dans l\'univers du jeu, GTA-friendly, livrés avec leur code spawn.','Motos':'Harley, sportives, choppers, cross et quads.','Old School':'Classiques américaines et européennes, par marque.','Course':'Monoplaces et voitures de circuit.','Trucks':'Poids lourds et utilitaires.','Mini':'Go-karts et mini-répliques.','Entreprise':'Véhicules livrés aux couleurs d\'une enseigne : restauration, garage, sécurité.'};
+  function slug(s){ return s.toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g,'-'); }
+  function buildCatalogue(){
+    if(catBuilt) return; catBuilt = true;
+    var ph = vehicles.reduce(function(a,it){ return a+it.total; },0);
+    document.getElementById('catMeta').innerHTML = '<span class="label"><b>'+vehicles.length+'</b> véhicules</span><span class="label"><b>'+fmt(ph)+'</b> photos</span><span class="label"><b>'+cats.length+'</b> catégories</span><span class="label"><b>'+vehicles.filter(function(it){ return it.spawn; }).length+'</b> codes spawn</span>';
+    document.getElementById('catIndex').innerHTML = cats.map(function(c){ return '<button class="chip" type="button" data-go="cat-'+slug(c)+'">'+esc(c)+' <i>'+counts[c]+'</i></button>'; }).join('');
+    document.getElementById('catSections').innerHTML = cats.map(function(c, k){
+      var list = vehicles.filter(function(it){ return it.cat===c; });
+      var n = list.reduce(function(a,it){ return a+it.total; },0);
+      return '<section class="cat-sec" id="cat-'+slug(c)+'"><div class="wrap cat-sec-head"><div><span class="cat-n">'+String(k+1).padStart(2,'0')+' / '+String(cats.length).padStart(2,'0')+'</span><h2 class="display d-lg">'+esc(c)+'</h2></div><div><span class="label"><b>'+list.length+'</b> '+(isBrand(list[0])?'galeries de marques':'véhicules')+' · <b>'+fmt(n)+'</b> photos</span><p>'+esc(CAT_DESC[c]||'')+'</p></div></div><div class="cat-grid">'+list.map(cardHTML).join('')+'</div></section>';
+    }).join('');
+    watchThumbs(document.getElementById('catSections'));
+  }
+  function showCatalogue(param){
+    buildCatalogue();
+    document.body.classList.add('cat-mode'); catPage.hidden = false;
+    document.title = 'Catalogue — VGC Développement';
+    var target = null;
+    if(param && /^\d+$/.test(param)) target = catPage.querySelector('.bcard[data-i="'+param+'"]');
+    else if(param) target = document.getElementById(param);
+    if(target){ setTimeout(function(){ target.scrollIntoView({block: target.classList.contains('bcard') ? 'center' : 'start'}); if(target.classList.contains('bcard')){ target.classList.add('flash'); setTimeout(function(){ target.classList.remove('flash'); }, 2600); } }, 30); }
+    else window.scrollTo({top:0, behavior:'instant'});
+  }
+  function showLanding(hash){
+    document.body.classList.remove('cat-mode'); catPage.hidden = true;
+    document.title = 'VGC Développement';
+    var el = hash && hash.length > 1 ? document.getElementById(hash.slice(1)) : null;
+    if(el) el.scrollIntoView({behavior:'instant', block:'start'}); else if(hash === '#top' || hash === '') window.scrollTo({top:0, behavior:'instant'});
+  }
+  function route(){
+    var h = location.hash || '';
+    if(h.indexOf('#/catalogue') === 0){ var p = h.split('/')[2]; showCatalogue(p ? decodeURIComponent(p) : null); }
+    else showLanding(h);
+    onScroll();
+  }
+  window.addEventListener('hashchange', route);
+  document.getElementById('catIndex').addEventListener('click', function(e){ var b = e.target.closest('[data-go]'); if(!b) return; var s = document.getElementById(b.dataset.go); if(s) s.scrollIntoView({behavior:'smooth', block:'start'}); });
+
+  /* ticker: real spawn codes */
+  var tk = document.getElementById('ticker');
+  var withSpawn = vehicles.filter(function(it){ return it.spawn; });
+  var pick = []; for(var i=0;i<withSpawn.length && pick.length<28;i+=Math.max(1,Math.floor(withSpawn.length/28))) pick.push(withSpawn[i]);
+  tk.innerHTML = pick.map(function(it){ return '<span><b>/car '+esc(it.spawn)+'</b>'+esc(it.name)+'</span>'; }).join('');
+  tk.innerHTML += tk.innerHTML;
+
+  /* ---------- lightbox ---------- */
+  var lb = document.getElementById('lb'), lbView = document.getElementById('lbView'), lbImg = document.getElementById('lbImg'), lbLoad = document.getElementById('lbLoad');
+  var lbName = document.getElementById('lbName'), lbSub = document.getElementById('lbSub'), lbCount = document.getElementById('lbCount'), lbSpawn = document.getElementById('lbSpawn'), lbDiscord = document.getElementById('lbDiscord'), lbThumbs = document.getElementById('lbThumbs');
+  var cur = null, frame = 0, loaded = {}, lastFocus = null;
+  var z = {s:1, x:0, y:0};
+  function partOf(k){ return Math.floor(k / D.part); }
+  function partUrl(it, p){ return it.strip+'-'+p+'.jpg'; }
+  function framesIn(it, p){ return Math.min(D.part, it.n - p*D.part); }
+  function posY(k, it){ var p = partOf(k), n = framesIn(it,p), j = k - p*D.part; return n > 1 ? (j/(n-1)*100) : 0; }
+  function preload(url, cb){ if(loaded[url]){ cb(); return; } var im = new Image(); im.onload = function(){ loaded[url]=1; cb(); }; im.onerror = cb; im.src = url; }
+  function resetZoom(){ z = {s:1,x:0,y:0}; applyZoom(); }
+  function applyZoom(){ lbImg.style.transform = 'translate('+z.x+'px,'+z.y+'px) scale('+z.s+')'; lbView.classList.toggle('zoomed', z.s>1.01); }
+  function clampZ(){
+    var w = lbView.clientWidth, h = lbView.clientHeight;
+    var minX = w - w*z.s, minY = h - h*z.s;
+    z.x = Math.min(0, Math.max(minX, z.x)); z.y = Math.min(0, Math.max(minY, z.y));
+  }
+  function zoomAt(px, py, ns){
+    ns = Math.min(4, Math.max(1, ns));
+    z.x = px - (px - z.x) * (ns / z.s); z.y = py - (py - z.y) * (ns / z.s); z.s = ns; clampZ(); applyZoom();
+  }
+  function show(k){
+    if(!cur) return;
+    frame = (k + cur.n) % cur.n;
+    var url = partUrl(cur, partOf(frame));
+    lbImg.classList.remove('ready'); lbLoad.hidden = false;
+    preload(url, function(){
+      lbImg.style.backgroundImage = 'url('+url+')';
+      lbImg.style.backgroundPosition = '0 '+posY(frame, cur).toFixed(4)+'%';
+      lbImg.classList.add('ready'); lbLoad.hidden = true;
+    });
+    resetZoom();
+    lbCount.innerHTML = '<b>'+(frame+1)+'</b> / '+cur.n + (cur.total > cur.n ? ' · '+cur.total+' sur Discord' : '');
+    lbThumbs.querySelectorAll('.lb-th').forEach(function(t,i){ t.classList.toggle('cur', i===frame); });
+    var th = lbThumbs.children[frame]; if(th && th.scrollIntoView) th.scrollIntoView({block:'nearest', inline:'nearest'});
+    var nxt = partUrl(cur, partOf((frame+1)%cur.n)); if(!loaded[nxt]) preload(nxt, function(){});
+  }
+  function open(it){
+    cur = it; lastFocus = document.activeElement;
+    lbName.textContent = it.name; lbSub.textContent = it.cat + (it.created ? ' · publié le '+it.created.split('-').reverse().join('/') : '');
+    lbSpawn.innerHTML = it.spawn ? 'Code : <b>/car '+esc(it.spawn)+'</b>' : '';
+    lbDiscord.href = 'https://discord.com/channels/'+GUILD+'/'+it.id;
+    var th = ''; for(var k=0;k<it.n;k++){ th += '<button class="lb-th" type="button" data-k="'+k+'" aria-label="Photo '+(k+1)+'"></button>'; }
+    lbThumbs.innerHTML = th;
+    // thumbs: use the sheet cell for frame 0, strip parts for the rest (loaded lazily after main image)
+    lb.hidden = false; document.body.classList.add('lb-open'); setTimeout(function(){ lb.classList.add('on'); }, 20);
+    show(it.cover || 0);
+    for(var p=0;p<it.parts;p++)(function(p){ var url = partUrl(it,p); preload(url, function(){
+      for(var k=p*D.part;k<Math.min(it.n,(p+1)*D.part);k++){ var b = lbThumbs.children[k]; if(b){ b.style.backgroundImage='url('+url+')'; b.style.backgroundPosition='0 '+posY(k,it).toFixed(4)+'%'; } }
+    }); })(p);
+    document.getElementById('lbClose').focus();
+  }
+  function close(){ lb.classList.remove('on'); document.body.classList.remove('lb-open'); setTimeout(function(){ lb.hidden = true; cur = null; }, 350); if(lastFocus && lastFocus.focus) lastFocus.focus(); }
+  document.addEventListener('click', function(e){
+    var c = e.target.closest('.bcard'); if(c){ var it = D.items.filter(function(x){ return x.i===+c.dataset.i; })[0]; if(it) open(it); return; }
+    var t = e.target.closest('.lb-th'); if(t){ show(+t.dataset.k); }
+  });
+  document.getElementById('lbClose').addEventListener('click', close);
+  document.getElementById('lbPrev').addEventListener('click', function(){ show(frame-1); });
+  document.getElementById('lbNext').addEventListener('click', function(){ show(frame+1); });
+  lb.addEventListener('click', function(e){ if(e.target===lb.querySelector('.lb-stage')) close(); });
+  window.addEventListener('keydown', function(e){
+    if(lb.hidden) return;
+    if(e.key==='Escape') close(); else if(e.key==='ArrowRight') show(frame+1); else if(e.key==='ArrowLeft') show(frame-1);
+  });
+  /* zoom & pan */
+  lbView.addEventListener('wheel', function(e){ e.preventDefault(); var r = lbView.getBoundingClientRect(); zoomAt(e.clientX-r.left, e.clientY-r.top, z.s * (e.deltaY < 0 ? 1.18 : 1/1.18)); }, {passive:false});
+  lbView.addEventListener('dblclick', function(e){ var r = lbView.getBoundingClientRect(); zoomAt(e.clientX-r.left, e.clientY-r.top, z.s > 1.01 ? 1 : 2.6); });
+  var ptrs = {}, drag = null, pinch = null;
+  lbView.addEventListener('pointerdown', function(e){
+    ptrs[e.pointerId] = {x:e.clientX, y:e.clientY}; lbView.setPointerCapture(e.pointerId);
+    var ids = Object.keys(ptrs);
+    if(ids.length===1){ drag = {x:e.clientX, y:e.clientY, ox:z.x, oy:z.y, moved:false}; lbView.classList.add('dragging'); }
+    else if(ids.length===2){ var a = ptrs[ids[0]], b = ptrs[ids[1]]; pinch = {d:Math.hypot(a.x-b.x,a.y-b.y), s:z.s}; drag = null; }
+  });
+  lbView.addEventListener('pointermove', function(e){
+    if(!ptrs[e.pointerId]) return; ptrs[e.pointerId] = {x:e.clientX, y:e.clientY};
+    var ids = Object.keys(ptrs);
+    if(pinch && ids.length===2){ var a = ptrs[ids[0]], b = ptrs[ids[1]]; var r = lbView.getBoundingClientRect(); var d = Math.hypot(a.x-b.x,a.y-b.y); zoomAt((a.x+b.x)/2-r.left, (a.y+b.y)/2-r.top, pinch.s * d/pinch.d); return; }
+    if(drag){ var dx = e.clientX-drag.x, dy = e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>4) drag.moved = true; if(z.s>1.01){ z.x = drag.ox+dx; z.y = drag.oy+dy; clampZ(); applyZoom(); } }
+  });
+  function ptrUp(e){
+    if(drag && !drag.moved && z.s<=1.01 && e.pointerType!=='touch'){ /* plain click = zoom in at point */ var r = lbView.getBoundingClientRect(); zoomAt(e.clientX-r.left, e.clientY-r.top, 2.2); }
+    else if(drag && !drag.moved && z.s<=1.01 && e.pointerType==='touch' && cur){ var r2 = lbView.getBoundingClientRect(); var x = e.clientX - r2.left; if(x < r2.width*0.3) show(frame-1); else if(x > r2.width*0.7) show(frame+1); }
+    delete ptrs[e.pointerId]; drag = null; pinch = null; lbView.classList.remove('dragging');
+  }
+  lbView.addEventListener('pointerup', ptrUp); lbView.addEventListener('pointercancel', ptrUp);
+  /* prefetch first strip on hover */
+  document.addEventListener('mouseover', function(e){ var c = e.target.closest('.bcard'); if(c){ var it = D.items.filter(function(x){ return x.i===+c.dataset.i; })[0]; if(it){ var u = partUrl(it,0); if(!loaded[u]) preload(u, function(){}); } } });
+
+  /* ---------- reveal on scroll ---------- */
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); en.target.querySelectorAll('.cnt').forEach(count); } });
+  },{threshold:.12, rootMargin:'0px 0px -6% 0px'});
+  document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+  function count(el){
+    if(el.dataset.done) return; el.dataset.done = 1;
+    var to = +el.dataset.to, t0 = null, dur = reduce ? 1 : 1600;
+    function f(t){ if(!t0) t0 = t; var p = Math.min(1,(t-t0)/dur); p = 1-Math.pow(1-p,4); el.textContent = fmt(to*p); if(p<1) requestAnimationFrame(f); }
+    requestAnimationFrame(f);
+  }
+
+  /* ---------- nav / progress / parallax ---------- */
+  var nav = document.getElementById('nav'), prog = document.getElementById('prog');
+  var navStuck = false;
+  var pars = Array.prototype.slice.call(document.querySelectorAll('[data-par]'));
+  var ticking = false;
+  function onScroll(){
+    var y = window.scrollY||0;
+    var st = y>40; nav.classList.toggle('stuck', st); if(st !== navStuck){ navStuck = st; setTimeout(function(){ if(typeof moveDot === 'function') moveDot(activeStop); }, 540); }
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    prog.style.width = (h>0 ? (y/h*100) : 0)+'%';
+    if(!reduce){
+      var vh = window.innerHeight;
+      pars.forEach(function(p){ var r = p.parentNode.getBoundingClientRect(); if(r.bottom < 0 || r.top > vh) return; var t = (r.top + r.height/2 - vh/2) / vh; p.style.transform = 'translate3d(0,'+(t*-60).toFixed(1)+'px,0)'; });
+    }
+    ticking = false;
+  }
+  window.addEventListener('scroll', function(){ if(!ticking){ requestAnimationFrame(onScroll); ticking = true; } }, {passive:true});
+  onScroll();
+
+  /* ---------- menu ---------- */
+  var burger = document.getElementById('burger'), sheet = document.getElementById('sheet');
+  function closeMenu(){ document.body.classList.remove('menu-open'); burger.setAttribute('aria-expanded','false'); sheet.setAttribute('aria-hidden','true'); }
+  burger.addEventListener('click', function(){ var open = !document.body.classList.contains('menu-open'); document.body.classList.toggle('menu-open', open); burger.setAttribute('aria-expanded', open?'true':'false'); sheet.setAttribute('aria-hidden', open?'false':'true'); });
+  sheet.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeMenu); });
+  window.addEventListener('keydown', function(e){ if(e.key==='Escape') closeMenu(); });
+
+  /* ---------- cursor / spotlight / magnetic ---------- */
+  var fine = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  if(fine && !reduce){
+    var curEl = document.getElementById('cursor'), cx=0, cy=0, tx=0, ty=0, shown=false;
+    window.addEventListener('mousemove', function(e){ tx=e.clientX; ty=e.clientY; if(!shown){ shown=true; curEl.classList.add('on'); cx=tx; cy=ty; } });
+    document.addEventListener('mouseleave', function(){ curEl.classList.remove('on'); shown=false; });
+    (function loop(){ cx+=(tx-cx)*.22; cy+=(ty-cy)*.22; curEl.style.left=cx+'px'; curEl.style.top=cy+'px'; requestAnimationFrame(loop); })();
+    document.addEventListener('mouseover', function(e){ if(e.target.closest('a,button,.bcard,.sw,.chip,.lab-stage')) curEl.classList.add('hot'); });
+    document.addEventListener('mouseout', function(e){ if(e.target.closest('a,button,.bcard,.sw,.chip,.lab-stage')) curEl.classList.remove('hot'); });
+    document.querySelectorAll('.svc-card').forEach(function(p){ p.addEventListener('mousemove', function(e){ var r = p.getBoundingClientRect(); p.style.setProperty('--mx',(e.clientX-r.left)+'px'); p.style.setProperty('--my',(e.clientY-r.top)+'px'); }); });
+    document.querySelectorAll('.mag').forEach(function(b){
+      b.addEventListener('mousemove', function(e){ var r = b.getBoundingClientRect(); var dx = e.clientX-(r.left+r.width/2), dy = e.clientY-(r.top+r.height/2); b.style.transform = 'translate('+(dx*.18)+'px,'+(dy*.28)+'px)'; });
+      b.addEventListener('mouseleave', function(){ b.style.transform=''; });
+    });
+  }
+
+  /* ---------- FAQ single-open ---------- */
+  document.querySelectorAll('.q').forEach(function(d){ d.addEventListener('toggle', function(){ if(d.open) document.querySelectorAll('.q').forEach(function(o){ if(o!==d) o.open=false; }); }); });
+
+  /* ---------- nav: sliding red square (9 stops: accueil → FAQ) ---------- */
+  var navDot = document.getElementById('navDot');
+  var stops = [document.querySelector('.brand')].concat(Array.prototype.slice.call(document.querySelectorAll('.nav-links .nlink')));
+  var activeStop = stops[0];
+  function moveDot(el){ if(!el || !navDot) return; var r = el.getBoundingClientRect(), n = nav.getBoundingClientRect(); navDot.style.transform = 'translate('+(r.left - n.left).toFixed(1)+'px,'+(r.top - n.top).toFixed(1)+'px)'; navDot.style.width = r.width.toFixed(1)+'px'; navDot.style.height = r.height.toFixed(1)+'px'; navDot.classList.add('on'); }
+  stops.forEach(function(s){ s.addEventListener('mouseenter', function(){ moveDot(s); }); });
+  nav.addEventListener('mouseleave', function(){ moveDot(activeStop); });
+  var spy = new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting){ var k = +en.target.dataset.stop; if(stops[k]){ activeStop = stops[k]; moveDot(activeStop); } } }); },{rootMargin:'-30% 0px -60% 0px', threshold:0});
+  [['.hero',0],['#vehicules',1],['.showcase',1],['#scripts',2],['#mlo',3],['#livery',4],['#serveur',5],['#tarifs',6],['#conditions',7],['#faq',8],['#join',8]].forEach(function(m){ var el = document.querySelector(m[0]); if(el){ el.dataset.stop = m[1]; spy.observe(el); } });
+  window.addEventListener('resize', function(){ moveDot(activeStop); });
+  setTimeout(function(){ moveDot(activeStop); }, 400);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ moveDot(activeStop); });
+
+  /* ---------- background videos (local MP4, muted, native loop) ---------- */
+  var lazyVids = Array.prototype.slice.call(document.querySelectorAll('.lazy-video'));
+  var heroVid = document.getElementById('heroVid');
+  function tryPlay(v){ var p = v.play(); if(p && p.catch) p.catch(function(){}); }
+  if(heroVid){
+    heroVid.addEventListener('playing', function(){ heroVid.classList.add('playing'); });
+    {
+      tryPlay(heroVid);
+      var kick = function(){ if(heroVid.paused) tryPlay(heroVid); lazyVids.forEach(function(v){ if(v.preload !== 'none' && v.paused) tryPlay(v); }); };
+      ['pointerdown','touchstart','keydown','scroll'].forEach(function(ev){ window.addEventListener(ev, kick, {once:true, passive:true}); });
+      document.addEventListener('visibilitychange', function(){ if(!document.hidden && heroVid.paused) tryPlay(heroVid); });
+    }
+  }
+  var catVid = document.getElementById('catVid'), vidWrap = document.getElementById('vid');
+  if(catVid && vidWrap){ catVid.addEventListener('loadedmetadata', function(){ vidWrap.classList.toggle('landscape', catVid.videoWidth >= catVid.videoHeight); }); }
+  if(lazyVids.length){
+    var vidIO = new IntersectionObserver(function(es){ es.forEach(function(en){ var v = en.target; if(en.isIntersecting){ if(v.preload === 'none'){ v.preload = 'auto'; v.load(); } tryPlay(v); } else if(!v.paused){ v.pause(); } }); },{rootMargin:'400px 0px'});
+    lazyVids.forEach(function(v){ vidIO.observe(v); });
+  }
+
+  /* ---------- ticket modal → Discord webhook (fallback courriel) ---------- */
+  var EMAIL = '__VGC_EMAIL__';
+  var TICKET = { webhook: 'https://discord.com/api/webhooks/1551616782731837480/axbfNQNpqOK5lCgny8sxIVeE-M4mfPO0d2PchlUDMFI7_PrH6cFxFi3q24NcAki3tTR5', mention: '' };   /* ← colle ici l'URL du webhook Discord du salon tickets (Paramètres du serveur → Intégrations → Webhooks) ; mention : ID d'un rôle à notifier (optionnel) */
+  var tk = document.getElementById('tk'), tkForm = document.getElementById('tkForm'), tkStatus = document.getElementById('tkStatus'), tkLast = null;
+  function openTicket(subject, prefill){
+    tkLast = document.activeElement;
+    var sel = document.getElementById('tkSubject'); if(subject){ for(var i=0;i<sel.options.length;i++) if(sel.options[i].value===subject) sel.selectedIndex = i; }
+    if(prefill != null) document.getElementById('tkMsg').value = prefill;
+    tkStatus.textContent = ''; tk.hidden = false; document.body.classList.add('lb-open');
+    setTimeout(function(){ tk.classList.add('on'); document.getElementById('tkName').focus(); }, 20);
+  }
+  function closeTicket(){ tk.classList.remove('on'); document.body.classList.remove('lb-open'); setTimeout(function(){ tk.hidden = true; }, 300); if(tkLast && tkLast.focus) tkLast.focus(); }
+  document.addEventListener('click', function(e){ var a = e.target.closest('[data-ticket]'); if(a){ e.preventDefault(); openTicket(a.dataset.ticket, a.dataset.prefill != null ? a.dataset.prefill : undefined); } });
+  document.getElementById('tkClose').addEventListener('click', closeTicket);
+  tk.addEventListener('click', function(e){ if(e.target === tk) closeTicket(); });
+  window.addEventListener('keydown', function(e){ if(e.key==='Escape' && !tk.hidden) closeTicket(); });
+  tkForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = document.getElementById('tkName').value.trim(), mail = document.getElementById('tkMail').value.trim(), subject = document.getElementById('tkSubject').value, msg = document.getElementById('tkMsg').value.trim();
+    if(document.getElementById('tkHp').value) return;
+    if(!name || !msg){ tkStatus.textContent = 'Indique au moins ton pseudo et ta demande.'; return; }
+    var body = 'Pseudo / nom : '+name+'\nCourriel : '+(mail||'—')+'\nSujet : '+subject+'\n\n'+msg+'\n\n— envoyé depuis le site VGC Développement';
+    var btn = tkForm.querySelector('button[type=submit]'); btn.disabled = true; tkStatus.textContent = 'Envoi…';
+    function fallback(){ btn.disabled = false; tkStatus.innerHTML = 'Le ticket s\'ouvre dans ton logiciel de courriel, prérempli. Sinon écris à <b>'+EMAIL+'</b> ou ouvre un ticket sur Discord.'; location.href = 'mailto:'+EMAIL+'?subject='+encodeURIComponent('[Site VGC] '+subject+' — '+name)+'&body='+encodeURIComponent(body); }
+    if(!TICKET.webhook){ fallback(); return; }
+    var payload = { username:'Site VGC Développement', content:(TICKET.mention ? '<@&'+TICKET.mention+'> ' : '')+'🌐 **Nouveau ticket depuis le site**', allowed_mentions: TICKET.mention ? {roles:[TICKET.mention]} : {parse:[]},
+      embeds:[{title:subject, color:14297372, fields:[{name:'Pseudo / nom', value:name.slice(0,200)},{name:'Courriel', value:(mail||'—').slice(0,200)},{name:'Demande', value:msg.slice(0,1000)}], footer:{text:'Site VGC · '+(location.hash||'accueil')}, timestamp:new Date().toISOString()}] };
+    fetch(TICKET.webhook, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+      .then(function(r){ if(!r.ok) throw new Error(r.status); btn.disabled = false; tkForm.reset(); tkStatus.textContent = 'Ticket envoyé sur le Discord VGC. On te répond '+(mail ? 'par courriel ou sur Discord.' : 'sur Discord.'); })
+      .catch(fallback);
+  });
+
+  /* ---------- Livery Lab UI ---------- */
+__VGC_LAB_UI__
+
+  route();
+})();
+</script>
+<script>
+__VGC_LAB3D__
+</script>
